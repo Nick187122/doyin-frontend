@@ -1,0 +1,146 @@
+.report-issue-widget {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 1000;
+}
+
+.report-toggle-btn {
+  background: var(--clr-brand-secondary);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(230, 57, 70, 0.3);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.report-toggle-btn:hover {
+  transform: scale(1.1);
+  background: #d62828;
+}
+
+.report-popover {
+  position: absolute;
+  bottom: 70px;
+  right: 0;
+  width: 320px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  animation: slideUp 0.3s ease-out forwards;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--clr-border);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.report-header h4 {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--clr-text-primary);
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: var(--clr-text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+  background: var(--clr-bg-page);
+  color: var(--clr-text-primary);
+}
+
+.report-body {
+  padding: 1.25rem;
+  background: var(--clr-surface);
+}
+
+.report-body p {
+  font-size: 0.85rem;
+  color: var(--clr-text-muted);
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.report-body textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: 0.9rem;
+  resize: vertical;
+  min-height: 80px;
+  margin-bottom: 1rem;
+  transition: border-color 0.2s;
+}
+
+.report-body textarea:focus {
+  outline: none;
+  border-color: var(--clr-brand-secondary);
+}
+
+.submit-btn {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+}
+
+.report-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1rem;
+  padding: 1rem 0;
+}
+
+.report-success p {
+  margin: 0;
+  color: var(--clr-text-primary);
+  font-weight: 500;
+}
+
+.report-error {
+  display: block;
+  color: var(--clr-brand-secondary);
+  font-size: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 480px) {
+  .report-issue-widget {
+    bottom: 1rem;
+    right: 1rem;
+  }
+  .report-popover {
+    width: calc(100vw - 2rem);
+    position: fixed;
+    bottom: 80px;
+    right: 1rem;
+  }
+}

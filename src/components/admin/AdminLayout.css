@@ -1,0 +1,42 @@
+.admin-layout-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background-color: var(--clr-bg-page);
+  color: var(--clr-text-main);
+  /* Ensure this takes up the whole screen, ignoring App.css global padding if any */
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+}
+
+.admin-main-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0; /* Important for preventing flex children from pushing bounds */
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.admin-page-content {
+  padding: 2rem;
+  flex: 1;
+}
+
+/* Scrollbar styling for admin specific content */
+.admin-main-content::-webkit-scrollbar {
+  width: 8px;
+}
+.admin-main-content::-webkit-scrollbar-track {
+  background: var(--clr-surface-light);
+}
+.admin-main-content::-webkit-scrollbar-thumb {
+  background: var(--clr-border);
+  border-radius: var(--radius-full);
+}
+.admin-main-content::-webkit-scrollbar-thumb:hover {
+  background: var(--clr-text-muted);
+}
