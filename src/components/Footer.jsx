@@ -47,6 +47,17 @@ const Footer = () => {
         <p style={{ color: '#94a3b8', fontSize: '0.875rem' }}>
           &copy; {new Date().getFullYear()} Doyin Kenya. All rights reserved.
         </p>
+        <p style={{ color: '#64748b', fontSize: '0.8rem', textAlign: 'center' }}>
+          Created by{' '}
+          <a
+            href="https://github.com/Nick187122"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: 'var(--clr-brand-secondary)', fontWeight: 600, textDecoration: 'none' }}
+          >
+            XLCH3MIST
+          </a>
+        </p>
         <div style={{ display: 'flex', gap: '1rem' }}>
           <a href={settings.facebook_url || '#'} target="_blank" rel="noreferrer" style={{ color: '#94a3b8' }}>Facebook</a>
           <a href={settings.instagram_url || '#'} target="_blank" rel="noreferrer" style={{ color: '#94a3b8' }}>Instagram</a>
@@ -57,3 +68,4 @@ const Footer = () => {
 };
 
 export default Footer;
+

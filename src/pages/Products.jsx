@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Package, Droplets, Search, MessageCircle, SlidersHorizontal } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { usePublicCatalog } from '../hooks/usePublicCatalog';
 
 const FILTER_OPTIONS = [
@@ -16,30 +16,35 @@ const FILTER_OPTIONS = [
 
 const matchesViewFilter = (product, selectedView) => {
   switch (selectedView) {
-    case 'pump':
-      return product.category?.is_pump ?? true;
-    case 'other':
-      return !(product.category?.is_pump ?? true);
-    case 'in-stock':
-      return Boolean(product.in_stock);
-    case 'with-flow-rate':
-      return Boolean(product.max_flow_rate);
-    case 'with-height':
-      return Boolean(product.max_height);
-    case 'with-depth':
-      return Boolean(product.recommended_depth);
-    case 'with-ideal-power':
-      return Boolean(product.ideal_power);
-    default:
-      return true;
+    case 'pump': return product.category?.is_pump ?? true;
+    case 'other': return !(product.category?.is_pump ?? true);
+    case 'in-stock': return Boolean(product.in_stock);
+    case 'with-flow-rate': return Boolean(product.max_flow_rate);
+    case 'with-height': return Boolean(product.max_height);
+    case 'with-depth': return Boolean(product.recommended_depth);
+    case 'with-ideal-power': return Boolean(product.ideal_power);
+    default: return true;
   }
 };
 
 const Products = () => {
   const { products, categories, loading } = usePublicCatalog();
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Read ?category=ID from URL on first load
+  const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || 'all');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedView, setSelectedView] = useState('all');
+
+  // Keep URL in sync when category filter changes
+  const handleCategoryChange = (val) => {
+    setSelectedCategory(val);
+    if (val === 'all') {
+      setSearchParams({});
+    } else {
+      setSearchParams({ category: val });
+    }
+  };
 
   const normalizedQuery = searchTerm.trim().toLowerCase();
   const categoryFiltered = selectedCategory === 'all'
@@ -50,20 +55,8 @@ const Products = () => {
     .filter((product) => matchesViewFilter(product, selectedView))
     .filter((product) => {
       if (!normalizedQuery) return true;
-
-      const haystack = [
-        product.name,
-        product.description,
-        product.category?.name,
-        product.max_flow_rate,
-        product.max_height,
-        product.recommended_depth,
-        product.ideal_power,
-      ]
-        .filter(Boolean)
-        .join(' ')
-        .toLowerCase();
-
+      const haystack = [product.name, product.description, product.category?.name, product.max_flow_rate, product.max_height, product.recommended_depth, product.ideal_power]
+        .filter(Boolean).join(' ').toLowerCase();
       return haystack.includes(normalizedQuery);
     });
 
@@ -102,9 +95,9 @@ const Products = () => {
               className="btn btn-outline"
               style={{ marginLeft: 'auto', padding: '0.35rem 0.8rem', fontSize: '0.82rem' }}
               onClick={() => {
-                setSelectedCategory('all');
                 setSelectedView('all');
                 setSearchTerm('');
+                handleCategoryChange('all');
               }}
             >
               Reset Filters
@@ -115,31 +108,19 @@ const Products = () => {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.9rem' }}>
           <div>
             <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.82rem', fontWeight: 700, color: 'var(--clr-text-muted)' }}>View By</label>
-            <select
-              value={selectedView}
-              onChange={(e) => setSelectedView(e.target.value)}
-              style={{ width: '100%', padding: '0.7rem 0.9rem', border: '1px solid var(--clr-border)', borderRadius: 'var(--radius-md)', fontFamily: 'inherit', fontSize: '0.92rem', background: '#fff' }}
-            >
+            <select value={selectedView} onChange={(e) => setSelectedView(e.target.value)} style={{ width: '100%', padding: '0.7rem 0.9rem', border: '1px solid var(--clr-border)', borderRadius: 'var(--radius-md)', fontFamily: 'inherit', fontSize: '0.92rem', background: '#fff' }}>
               {FILTER_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
+                <option key={option.value} value={option.value}>{option.label}</option>
               ))}
             </select>
           </div>
 
           <div>
             <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.82rem', fontWeight: 700, color: 'var(--clr-text-muted)' }}>Category</label>
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              style={{ width: '100%', padding: '0.7rem 0.9rem', border: '1px solid var(--clr-border)', borderRadius: 'var(--radius-md)', fontFamily: 'inherit', fontSize: '0.92rem', background: '#fff' }}
-            >
+            <select value={selectedCategory} onChange={(e) => handleCategoryChange(e.target.value)} style={{ width: '100%', padding: '0.7rem 0.9rem', border: '1px solid var(--clr-border)', borderRadius: 'var(--radius-md)', fontFamily: 'inherit', fontSize: '0.92rem', background: '#fff' }}>
               <option value="all">All Categories</option>
               {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
+                <option key={category.id} value={category.id}>{category.name}</option>
               ))}
             </select>
           </div>
@@ -161,16 +142,12 @@ const Products = () => {
         <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--clr-text-muted)' }}>
           <Package size={48} color="var(--clr-border)" />
           <p style={{ marginTop: '1rem', marginBottom: '0.75rem' }}>
-            {hasActiveFilters
-              ? 'No products matched your current search and filter combination. We also checked product descriptions and specifications.'
-              : 'No products available yet. Check back soon!'}
+            {hasActiveFilters ? 'No products matched your current search and filter combination.' : 'No products available yet. Check back soon!'}
           </p>
           {hasActiveFilters && (
             <a
-              href={`https://wa.me/254742167151?text=${encodeURIComponent(`Hi, I could not find the product I need on your website. Search term: "${searchTerm.trim() || 'none'}". Filter: "${selectedView}". Please assist me.`)}`}
-              className="btn btn-outline"
-              target="_blank"
-              rel="noopener noreferrer"
+              href={`https://wa.me/254742167151?text=${encodeURIComponent(`Hi, I could not find the product I need. Search: "${searchTerm.trim() || 'none'}". Please assist me.`)}`}
+              className="btn btn-outline" target="_blank" rel="noopener noreferrer"
               style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
             >
               <MessageCircle size={16} /> Contact Sales
@@ -178,18 +155,13 @@ const Products = () => {
           )}
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
           {filtered.map((product) => (
             <div key={product.id} className="card" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', padding: 0 }}>
-              <div style={{ height: '200px', background: 'var(--clr-surface-metallic)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+              {/* Fixed aspect-ratio image container — responsive on all screens */}
+              <div style={{ aspectRatio: '16/10', background: 'var(--clr-surface-metallic)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                 {product.image_url ? (
-                  <img
-                    src={product.image_url}
-                    alt={product.name}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 0 }}
-                    loading="lazy"
-                    decoding="async"
-                  />
+                  <img src={product.image_url} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" decoding="async" />
                 ) : (
                   <Droplets size={48} color="var(--clr-border)" />
                 )}
@@ -203,7 +175,7 @@ const Products = () => {
                 )}
 
                 <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                  <h3 style={{ margin: 0, fontSize: '1.15rem' }}>{product.name}</h3>
+                  <h3 style={{ margin: 0, fontSize: '1.1rem' }}>{product.name}</h3>
                   <span style={{ fontSize: '0.7rem', fontWeight: 600, padding: '0.15rem 0.4rem', borderRadius: '4px', background: product.in_stock ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)', color: product.in_stock ? '#10b981' : '#ef4444' }}>
                     {product.in_stock ? 'In Stock' : 'Out of Stock'}
                   </span>
@@ -214,37 +186,13 @@ const Products = () => {
                 )}
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', fontSize: '0.82rem', marginTop: '0.25rem' }}>
-                  {product.max_flow_rate && (
-                    <div style={{ background: 'var(--clr-bg-page)', padding: '0.4rem 0.6rem', borderRadius: 'var(--radius-sm)' }}>
-                      <span style={{ color: 'var(--clr-text-muted)', display: 'block', fontSize: '0.7rem' }}>Flow Rate</span>
-                      <strong>{product.max_flow_rate}</strong>
-                    </div>
-                  )}
-                  {product.max_height && (
-                    <div style={{ background: 'var(--clr-bg-page)', padding: '0.4rem 0.6rem', borderRadius: 'var(--radius-sm)' }}>
-                      <span style={{ color: 'var(--clr-text-muted)', display: 'block', fontSize: '0.7rem' }}>Max Height</span>
-                      <strong>{product.max_height}</strong>
-                    </div>
-                  )}
-                  {product.recommended_depth && (
-                    <div style={{ background: 'var(--clr-bg-page)', padding: '0.4rem 0.6rem', borderRadius: 'var(--radius-sm)' }}>
-                      <span style={{ color: 'var(--clr-text-muted)', display: 'block', fontSize: '0.7rem' }}>Rec. Depth</span>
-                      <strong>{product.recommended_depth}</strong>
-                    </div>
-                  )}
-                  {product.ideal_power && (
-                    <div style={{ background: '#fef3c7', padding: '0.4rem 0.6rem', borderRadius: 'var(--radius-sm)', border: '1px solid #fde68a' }}>
-                      <span style={{ color: '#92400e', display: 'block', fontSize: '0.7rem' }}>Ideal Power</span>
-                      <strong style={{ color: '#92400e' }}>{product.ideal_power}</strong>
-                    </div>
-                  )}
+                  {product.max_flow_rate && (<div style={{ background: 'var(--clr-bg-page)', padding: '0.4rem 0.6rem', borderRadius: 'var(--radius-sm)' }}><span style={{ color: 'var(--clr-text-muted)', display: 'block', fontSize: '0.7rem' }}>Flow Rate</span><strong>{product.max_flow_rate}</strong></div>)}
+                  {product.max_height && (<div style={{ background: 'var(--clr-bg-page)', padding: '0.4rem 0.6rem', borderRadius: 'var(--radius-sm)' }}><span style={{ color: 'var(--clr-text-muted)', display: 'block', fontSize: '0.7rem' }}>Max Height</span><strong>{product.max_height}</strong></div>)}
+                  {product.recommended_depth && (<div style={{ background: 'var(--clr-bg-page)', padding: '0.4rem 0.6rem', borderRadius: 'var(--radius-sm)' }}><span style={{ color: 'var(--clr-text-muted)', display: 'block', fontSize: '0.7rem' }}>Rec. Depth</span><strong>{product.recommended_depth}</strong></div>)}
+                  {product.ideal_power && (<div style={{ background: '#fef3c7', padding: '0.4rem 0.6rem', borderRadius: 'var(--radius-sm)', border: '1px solid #fde68a' }}><span style={{ color: '#92400e', display: 'block', fontSize: '0.7rem' }}>Ideal Power</span><strong style={{ color: '#92400e' }}>{product.ideal_power}</strong></div>)}
                 </div>
 
-                <Link
-                  to={`/products/${product.id}`}
-                  className="btn btn-primary"
-                  style={{ width: '100%', marginTop: 'auto', display: 'flex', justifyContent: 'center' }}
-                >
+                <Link to={`/products/${product.id}`} className="btn btn-primary" style={{ width: '100%', marginTop: 'auto', display: 'flex', justifyContent: 'center' }}>
                   View Details
                 </Link>
               </div>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Package, Tag, ShoppingCart, Users, Settings, LogOut, Image, Mail } from 'lucide-react';
+import { LayoutDashboard, Package, Tag, ShoppingCart, Users, Settings, LogOut, Image, Mail, Headset } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import './AdminSidebar.css';
 
@@ -56,6 +56,11 @@ const AdminSidebar = () => {
           <span>Hero Images</span>
         </NavLink>
         
+        <NavLink to="/admin/salespersons" className={({ isActive }) => (isActive ? 'admin-nav-item active' : 'admin-nav-item')}>
+          <Headset size={20} />
+          <span>Sales Reps</span>
+        </NavLink>
+
         <NavLink to="/admin/settings" className={({ isActive }) => (isActive ? 'admin-nav-item active' : 'admin-nav-item')}>
           <Settings size={20} />
           <span>Settings</span>

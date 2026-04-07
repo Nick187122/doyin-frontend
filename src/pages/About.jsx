@@ -174,9 +174,42 @@ const About = () => {
           <ContactForm />
         </div>
       </section>
+
+      {/* Warehouse Location Map */}
+      <section style={{ background: 'var(--clr-surface-light)', borderTop: '1px solid var(--clr-border)', padding: '5rem 0' }}>
+        <div className="container">
+          <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+            <h2 style={{ marginBottom: '0.5rem' }}>Our Warehouse Location</h2>
+            <p style={{ color: 'var(--clr-text-muted)', maxWidth: '500px', margin: '0 auto' }}>
+              Come visit us! We are based in Nairobi, Kenya. Find us on the map below.
+            </p>
+          </div>
+          <div style={{
+            borderRadius: 'var(--radius-lg)',
+            overflow: 'hidden',
+            boxShadow: 'var(--shadow-lg)',
+            border: '1px solid var(--clr-border)',
+            maxWidth: '900px',
+            margin: '0 auto',
+            aspectRatio: '16/7',
+          }}>
+            <iframe
+              title="Doyin Kenya Warehouse Location"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d255281.14539785254!2d36.70730744863282!3d-1.3031933000000138!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x182f1172d84d49a7%3A0xf7cf0254b297924c!2sNairobi%2C%20Kenya!5e0!3m2!1sen!2ske!4v1712494034567!5m2!1sen!2ske"
+              width="100%"
+              height="100%"
+              style={{ border: 0, display: 'block' }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+          </div>
+        </div>
+      </section>
     </div>
   );
 };
+
 
 const ContactForm = () => {
   const [form, setForm] = useState({ name: '', email: '', content: '' });
