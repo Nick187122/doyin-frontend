@@ -11,15 +11,15 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 4.25rem;
+  height: 5.5rem;
 }
 
 .navbar-logo {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 8.5rem;
-  height: 3.35rem;
+  width: 14rem;
+  height: 4.5rem;
 }
 
 .logo-image {
