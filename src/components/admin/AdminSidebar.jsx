@@ -16,7 +16,7 @@ const AdminSidebar = () => {
   return (
     <aside className="admin-sidebar">
       <div className="admin-sidebar-logo">
-        <img src="/images/logo.jpg" alt="Doyin Kenya logo" className="admin-sidebar-logo-image" />
+        <img src="/images/logo.png" alt="Doyin Kenya logo" className="admin-sidebar-logo-image" />
         <span>Doyin Admin</span>
       </div>
       
