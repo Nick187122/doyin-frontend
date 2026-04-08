@@ -41,11 +41,11 @@ const EnquiryModal = ({ product, onClose }) => {
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div style={{
-        background: 'var(--clr-surface)',
+        background: '#ffffff',
         borderRadius: 'var(--radius-lg)',
-        boxShadow: 'var(--shadow-lg)',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
         width: '100%', maxWidth: '480px',
-        border: '1px solid var(--clr-border)',
+        border: '1px solid #e2e8f0',
         overflow: 'hidden',
       }}>
         {/* Header */}
@@ -64,16 +64,17 @@ const EnquiryModal = ({ product, onClose }) => {
         </div>
 
         {/* Body */}
-        <div style={{ padding: '1.5rem' }}>
+        <div style={{ padding: '1.5rem', background: '#f8fafc' }}>
           <div style={{
-            background: 'var(--clr-bg-page)', borderRadius: 'var(--radius-md)',
-            padding: '1rem', marginBottom: '1.5rem',
-            border: '1px solid var(--clr-border)',
+            background: '#ffffff', borderRadius: 'var(--radius-md)',
+            padding: '1rem 1.25rem', marginBottom: '1.5rem',
+            border: '1px solid #e2e8f0',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
           }}>
-            <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--clr-text-muted)', marginBottom: '0.3rem' }}>
+            <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b', marginBottom: '0.3rem', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>
               Product
             </p>
-            <p style={{ margin: 0, fontWeight: 700, fontSize: '1.1rem', color: 'var(--clr-text-main)' }}>
+            <p style={{ margin: 0, fontWeight: 700, fontSize: '1.05rem', color: '#0f172a' }}>
               {product.name}
             </p>
           </div>
@@ -101,30 +102,34 @@ const EnquiryModal = ({ product, onClose }) => {
                     onChange={e => setSelectedId(e.target.value)}
                     style={{
                       width: '100%', padding: '0.85rem 2.5rem 0.85rem 1rem',
-                      border: '2px solid var(--clr-border)', borderRadius: 'var(--radius-md)',
+                      border: '2px solid #e2e8f0', borderRadius: 'var(--radius-md)',
                       fontFamily: 'inherit', fontSize: '1rem',
-                      background: 'var(--clr-surface)', appearance: 'none',
-                      cursor: 'pointer', color: 'var(--clr-text-main)',
+                      background: '#ffffff', appearance: 'none',
+                      cursor: 'pointer', color: '#1e293b',
                       outline: 'none',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
                     }}
                   >
                     {salespersons.map(s => (
                       <option key={s.id} value={s.id}>{s.name}</option>
                     ))}
                   </select>
-                  <ChevronDown size={18} style={{ position: 'absolute', right: '0.9rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--clr-text-muted)' }} />
+                  <ChevronDown size={18} style={{ position: 'absolute', right: '0.9rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#64748b' }} />
                 </div>
               </div>
 
               {selected && (
                 <div style={{
-                  background: 'rgba(2,101,192,0.06)', border: '1px solid rgba(2,101,192,0.2)',
-                  borderRadius: 'var(--radius-md)', padding: '1rem', marginBottom: '1.5rem',
-                  fontSize: '0.9rem', color: 'var(--clr-text-muted)', lineHeight: 1.6,
+                  background: '#ffffff',
+                  border: '1px solid #e2e8f0',
+                  borderLeft: '4px solid var(--clr-brand-primary)',
+                  borderRadius: 'var(--radius-md)', padding: '1rem 1.25rem', marginBottom: '1.5rem',
+                  fontSize: '0.9rem', color: '#475569', lineHeight: 1.7,
+                  boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
                 }}>
                   <p style={{ margin: 0, fontStyle: 'italic' }}>
-                    "<strong style={{ color: 'var(--clr-text-main)' }}>Hello {selected.name}</strong>, I'm analyzing the{' '}
-                    <strong style={{ color: 'var(--clr-text-main)' }}>{product.name}</strong>. Please assist me with pricing and availability."
+                    "<strong style={{ color: '#0f172a', fontStyle: 'normal' }}>Hello {selected.name}</strong>, I'm analyzing the{' '}
+                    <strong style={{ color: '#0f172a', fontStyle: 'normal' }}>{product.name}</strong>. Please assist me with pricing and availability."
                   </p>
                 </div>
               )}
