@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://doyin-kenya.com/sitemap.xml
