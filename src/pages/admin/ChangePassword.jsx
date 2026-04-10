@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ShieldCheck, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import Seo from '../../components/Seo';
 
 const ChangePassword = () => {
   const { onPasswordChanged } = useAuth();
@@ -43,6 +44,13 @@ const ChangePassword = () => {
       background: 'linear-gradient(135deg, var(--clr-brand-primary) 0%, #013b70 60%, #011d3a 100%)',
       padding: '2rem'
     }}>
+      <Seo
+        title="Change Password | Doyin Kenya Admin"
+        description="Doyin Kenya admin password update page."
+        path="/admin/change-password"
+        noindex
+        nofollow
+      />
       <div style={{
         background: 'var(--clr-surface-light)', borderRadius: 'var(--radius-lg)',
         padding: '3rem', width: '100%', maxWidth: '440px',

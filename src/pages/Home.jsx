@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { usePublicSite } from '../context/PublicSiteContext';
 import { API_ORIGIN } from '../services/api';
 import { usePublicCatalog } from '../hooks/usePublicCatalog';
+import Seo from '../components/Seo';
 import './Home.css';
 
 // Pump category icon map — maps keyword in name to an emoji
@@ -39,6 +40,11 @@ const Home = () => {
 
   return (
     <div className="home-page">
+      <Seo
+        title="Doyin Kenya | Submersible Water Pumps and Borehole Pump Solutions"
+        description="Doyin Kenya supplies high-performance submersible water pumps, borehole pumps, solar pump systems, and industrial fluid solutions across Kenya."
+        path="/"
+      />
       {/* Hero Section */}
       <section className="hero">
         <div className="container hero-container">

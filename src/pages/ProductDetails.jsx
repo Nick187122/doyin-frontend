@@ -4,6 +4,14 @@ import { ArrowLeft, Droplets, ArrowRight, CheckCircle2, XCircle } from 'lucide-r
 import api from '../services/api';
 import { getCachedPublicCatalog } from '../hooks/usePublicCatalog';
 import EnquiryModal from '../components/EnquiryModal';
+import Seo from '../components/Seo';
+
+const trimDescription = (value, maxLength = 160) => {
+  if (!value) return '';
+  const normalized = value.replace(/\s+/g, ' ').trim();
+  if (normalized.length <= maxLength) return normalized;
+  return `${normalized.slice(0, maxLength - 1).trim()}…`;
+};
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -40,6 +48,11 @@ const ProductDetails = () => {
   if (loading) {
     return (
       <div className="container section-padding" style={{ textAlign: 'center', minHeight: '60vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+        <Seo
+          title="Loading Product | Doyin Kenya"
+          description="Loading product information from Doyin Kenya."
+          path={`/products/${id}`}
+        />
         <Droplets size={48} style={{ animation: 'pulse 1.5s infinite', color: 'var(--clr-brand-secondary)' }} />
         <p style={{ marginTop: '1rem', color: 'var(--clr-text-muted)' }}>Loading product details...</p>
       </div>
@@ -49,6 +62,12 @@ const ProductDetails = () => {
   if (!product) {
     return (
       <div className="container section-padding" style={{ textAlign: 'center', minHeight: '60vh' }}>
+        <Seo
+          title="Product Not Found | Doyin Kenya"
+          description="The requested Doyin Kenya product could not be found."
+          path={`/products/${id}`}
+          noindex
+        />
         <h2>Product Not Found</h2>
         <p style={{ color: 'var(--clr-text-muted)' }}>The product you are looking for does not exist or has been removed.</p>
         <Link to="/products" className="btn btn-primary" style={{ marginTop: '1rem', display: 'inline-block' }}>Back to Products</Link>
@@ -58,9 +77,21 @@ const ProductDetails = () => {
 
   const isPumpCategory = product.category?.is_pump ?? true;
   const hasSpecifications = Boolean(product.max_flow_rate || product.max_height || product.recommended_depth || product.ideal_power);
+  const productTitle = `${product.name} | Doyin Kenya`;
+  const productDescription = trimDescription(
+    product.description
+      || `${product.name} from Doyin Kenya. Explore specifications, availability, and enquiry options for this product.`
+  );
 
   return (
     <div className="container section-padding">
+      <Seo
+        title={productTitle}
+        description={productDescription}
+        path={`/products/${product.id}`}
+        type="product"
+        image={product.image_url || '/images/logo.jpg'}
+      />
       <Link to="/products" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: 'var(--clr-text-muted)', textDecoration: 'none', marginBottom: '2rem', fontWeight: 500 }}>
         <ArrowLeft size={18} /> Back to Catalog
       </Link>

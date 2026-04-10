@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import Seo from '../../components/Seo';
 import './AdminLogin.css';
 
 const AdminLogin = () => {
@@ -32,6 +33,13 @@ const AdminLogin = () => {
 
   return (
     <div className="login-page">
+      <Seo
+        title="Admin Login | Doyin Kenya"
+        description="Doyin Kenya administration login."
+        path="/admin/login"
+        noindex
+        nofollow
+      />
       <div className="login-card">
         <div className="login-logo">
           <img src="/images/logo.jpg" alt="Doyin Kenya logo" className="login-logo-image" />

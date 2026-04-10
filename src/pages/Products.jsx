@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Package, Droplets, Search, MessageCircle, SlidersHorizontal } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { usePublicCatalog } from '../hooks/usePublicCatalog';
+import Seo from '../components/Seo';
 
 const FILTER_OPTIONS = [
   { value: 'all', label: 'All Products' },
@@ -61,9 +62,21 @@ const Products = () => {
     });
 
   const hasActiveFilters = selectedCategory !== 'all' || selectedView !== 'all' || normalizedQuery;
+  const selectedCategoryName = categories.find((category) => String(category.id) === String(selectedCategory))?.name;
+  const productsTitle = selectedCategoryName
+    ? `${selectedCategoryName} Products | Doyin Kenya`
+    : 'Products | Doyin Kenya';
+  const productsDescription = selectedCategoryName
+    ? `Browse ${selectedCategoryName.toLowerCase()} and related pump solutions from Doyin Kenya. Explore specifications, stock status, and product details.`
+    : 'Browse submersible water pumps, accessories, and industrial pump solutions from Doyin Kenya. Explore specifications, stock status, and product details.';
 
   return (
     <div className="container section-padding">
+      <Seo
+        title={productsTitle}
+        description={productsDescription}
+        path="/products"
+      />
       <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
         <h1>Our Products</h1>
         <p style={{ color: 'var(--clr-text-muted)', maxWidth: '600px', margin: '0 auto' }}>

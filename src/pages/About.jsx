@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Target, Users, ShieldCheck, Zap } from 'lucide-react';
 import { usePublicSite } from '../context/PublicSiteContext';
 import api, { API_ORIGIN } from '../services/api';
+import Seo from '../components/Seo';
 
 const About = () => {
   const { settings } = usePublicSite();
@@ -33,6 +34,11 @@ const About = () => {
 
   return (
     <div className="section-padding" style={{ paddingBottom: '0' }}>
+      <Seo
+        title="About Doyin Kenya | Pump Engineering and Water Solutions"
+        description="Learn about Doyin Kenya, our mission, engineering values, and our water pump and industrial fluid solutions across East Africa."
+        path="/about"
+      />
       {/* Hero Section */}
       <section style={{ 
         background: 'linear-gradient(135deg, var(--clr-text-main) 0%, var(--clr-brand-primary) 100%)', 

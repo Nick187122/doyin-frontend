@@ -2,11 +2,19 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import AdminSidebar from './AdminSidebar';
 import AdminHeader from './AdminHeader';
+import Seo from '../Seo';
 import './AdminLayout.css';
 
 const AdminLayout = () => {
   return (
     <div className="admin-layout-container">
+      <Seo
+        title="Admin Dashboard | Doyin Kenya"
+        description="Doyin Kenya administration portal."
+        path="/admin"
+        noindex
+        nofollow
+      />
       <AdminSidebar />
       <div className="admin-main-content">
         <AdminHeader />
