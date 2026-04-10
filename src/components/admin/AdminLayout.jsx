@@ -9,8 +9,8 @@ const AdminLayout = () => {
   return (
     <div className="admin-layout-container">
       <Seo
-        title="Admin Dashboard | Doyin Kenya"
-        description="Doyin Kenya administration portal."
+        title="Admin Dashboard | Doyin Pumps Kenya"
+        description="Doyin Pumps Kenya administration portal."
         path="/admin"
         noindex
         nofollow

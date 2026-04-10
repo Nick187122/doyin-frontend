@@ -64,11 +64,11 @@ const Products = () => {
   const hasActiveFilters = selectedCategory !== 'all' || selectedView !== 'all' || normalizedQuery;
   const selectedCategoryName = categories.find((category) => String(category.id) === String(selectedCategory))?.name;
   const productsTitle = selectedCategoryName
-    ? `${selectedCategoryName} Products | Doyin Kenya`
-    : 'Products | Doyin Kenya';
+    ? `${selectedCategoryName} Products | Doyin Pumps Kenya`
+    : 'Products | Doyin Pumps Kenya';
   const productsDescription = selectedCategoryName
-    ? `Browse ${selectedCategoryName.toLowerCase()} and related pump solutions from Doyin Kenya. Explore specifications, stock status, and product details.`
-    : 'Browse submersible water pumps, accessories, and industrial pump solutions from Doyin Kenya. Explore specifications, stock status, and product details.';
+    ? `Browse ${selectedCategoryName.toLowerCase()} and related pump solutions from Doyin Pumps Kenya. Explore specifications, stock status, and product details.`
+    : 'Browse submersible water pumps, accessories, and industrial pump solutions from Doyin Pumps Kenya. Explore specifications, stock status, and product details.';
 
   return (
     <div className="container section-padding">

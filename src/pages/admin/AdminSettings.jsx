@@ -4,7 +4,7 @@ import api, { API_ORIGIN } from '../../services/api';
 
 const AdminSettings = () => {
   const [settings, setSettings] = useState({
-    store_name: 'Doyin Kenya',
+    store_name: 'Doyin Pumps Kenya',
     contact_email: 'admin@doyinkenya.com',
     contact_phone: '+254 742 167 151',
     contact_address: 'Nairobi, Kenya',

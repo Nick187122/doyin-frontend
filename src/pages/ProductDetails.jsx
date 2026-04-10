@@ -49,8 +49,8 @@ const ProductDetails = () => {
     return (
       <div className="container section-padding" style={{ textAlign: 'center', minHeight: '60vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
         <Seo
-          title="Loading Product | Doyin Kenya"
-          description="Loading product information from Doyin Kenya."
+          title="Loading Product | Doyin Pumps Kenya"
+          description="Loading product information from Doyin Pumps Kenya."
           path={`/products/${id}`}
         />
         <Droplets size={48} style={{ animation: 'pulse 1.5s infinite', color: 'var(--clr-brand-secondary)' }} />
@@ -63,8 +63,8 @@ const ProductDetails = () => {
     return (
       <div className="container section-padding" style={{ textAlign: 'center', minHeight: '60vh' }}>
         <Seo
-          title="Product Not Found | Doyin Kenya"
-          description="The requested Doyin Kenya product could not be found."
+          title="Product Not Found | Doyin Pumps Kenya"
+          description="The requested Doyin Pumps Kenya product could not be found."
           path={`/products/${id}`}
           noindex
         />
@@ -77,10 +77,10 @@ const ProductDetails = () => {
 
   const isPumpCategory = product.category?.is_pump ?? true;
   const hasSpecifications = Boolean(product.max_flow_rate || product.max_height || product.recommended_depth || product.ideal_power);
-  const productTitle = `${product.name} | Doyin Kenya`;
+  const productTitle = `${product.name} | Doyin Pumps Kenya`;
   const productDescription = trimDescription(
     product.description
-      || `${product.name} from Doyin Kenya. Explore specifications, availability, and enquiry options for this product.`
+      || `${product.name} from Doyin Pumps Kenya. Explore specifications, availability, and enquiry options for this product.`
   );
 
   return (

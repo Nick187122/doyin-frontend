@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 
-const DEFAULT_TITLE = 'Doyin Kenya | Submersible Water Pumps and Industrial Pump Solutions';
-const DEFAULT_DESCRIPTION = 'Doyin Kenya supplies submersible water pumps, borehole pumps, accessories, and industrial fluid handling solutions across Kenya.';
+const DEFAULT_TITLE = 'Doyin Pumps Kenya | Submersible Water Pumps and Industrial Pump Solutions';
+const DEFAULT_DESCRIPTION = 'Doyin Pumps Kenya supplies submersible water pumps, borehole pumps, accessories, and industrial fluid handling solutions across Kenya.';
 const DEFAULT_OG_IMAGE = '/images/logo.jpg';
 
 function upsertMeta(selector, attributes) {
@@ -61,7 +61,7 @@ const Seo = ({
     upsertMeta('meta[name="description"]', { name: 'description', content: description });
     upsertMeta('meta[name="robots"]', { name: 'robots', content: robots });
     upsertMeta('meta[property="og:type"]', { property: 'og:type', content: type });
-    upsertMeta('meta[property="og:site_name"]', { property: 'og:site_name', content: 'Doyin Kenya' });
+    upsertMeta('meta[property="og:site_name"]', { property: 'og:site_name', content: 'Doyin Pumps Kenya' });
     upsertMeta('meta[property="og:title"]', { property: 'og:title', content: title });
     upsertMeta('meta[property="og:description"]', { property: 'og:description', content: description });
     upsertMeta('meta[property="og:url"]', { property: 'og:url', content: canonicalUrl });

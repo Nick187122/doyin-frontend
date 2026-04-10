@@ -10,7 +10,7 @@ const Navbar = () => {
     <nav className="navbar">
       <div className="container navbar-container">
         <Link to="/" className="navbar-logo">
-          <img src="/images/logo.png?v=2" alt="Doyin Kenya" className="logo-image" />
+          <img src="/images/logo.jpg" alt="Doyin Pumps Kenya logo" className="logo-image" />
         </Link>
         
         <div className={`navbar-links ${isOpen ? 'active' : ''}`}>

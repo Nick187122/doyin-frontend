@@ -41,8 +41,8 @@ const Home = () => {
   return (
     <div className="home-page">
       <Seo
-        title="Doyin Kenya | Submersible Water Pumps and Borehole Pump Solutions"
-        description="Doyin Kenya supplies high-performance submersible water pumps, borehole pumps, solar pump systems, and industrial fluid solutions across Kenya."
+        title="Doyin Pumps Kenya | Submersible Water Pumps and Borehole Pump Solutions"
+        description="Doyin Pumps Kenya supplies high-performance submersible water pumps, borehole pumps, solar pump systems, and industrial fluid solutions across Kenya."
         path="/"
       />
       {/* Hero Section */}

@@ -45,7 +45,7 @@ const Footer = () => {
       
       <div className="container" style={{ borderTop: '1px solid #334155', paddingTop: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
         <p style={{ color: '#94a3b8', fontSize: '0.875rem' }}>
-          &copy; {new Date().getFullYear()} Doyin Kenya. All rights reserved.
+          &copy; {new Date().getFullYear()} Doyin Pumps Kenya. All rights reserved.
         </p>
         <p style={{ color: '#64748b', fontSize: '0.8rem', textAlign: 'center' }}>
           Created by{' '}
@@ -68,4 +68,3 @@ const Footer = () => {
 };
 
 export default Footer;
-

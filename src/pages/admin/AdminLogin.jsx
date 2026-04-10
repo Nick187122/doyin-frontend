@@ -34,16 +34,16 @@ const AdminLogin = () => {
   return (
     <div className="login-page">
       <Seo
-        title="Admin Login | Doyin Kenya"
-        description="Doyin Kenya administration login."
+        title="Admin Login | Doyin Pumps Kenya"
+        description="Doyin Pumps Kenya administration login."
         path="/admin/login"
         noindex
         nofollow
       />
       <div className="login-card">
         <div className="login-logo">
-          <img src="/images/logo.jpg" alt="Doyin Kenya logo" className="login-logo-image" />
-          <h1>Doyin Kenya</h1>
+          <img src="/images/logo.jpg" alt="Doyin Pumps Kenya logo" className="login-logo-image" />
+          <h1>Doyin Pumps Kenya</h1>
           <p>Administration Portal</p>
         </div>
 

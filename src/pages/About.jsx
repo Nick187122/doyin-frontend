@@ -35,8 +35,8 @@ const About = () => {
   return (
     <div className="section-padding" style={{ paddingBottom: '0' }}>
       <Seo
-        title="About Doyin Kenya | Pump Engineering and Water Solutions"
-        description="Learn about Doyin Kenya, our mission, engineering values, and our water pump and industrial fluid solutions across East Africa."
+        title="About Doyin Pumps Kenya | Pump Engineering and Water Solutions"
+        description="Learn about Doyin Pumps Kenya, our mission, engineering values, and our water pump and industrial fluid solutions across East Africa."
         path="/about"
       />
       {/* Hero Section */}
@@ -48,7 +48,7 @@ const About = () => {
         marginBottom: '4rem'
       }}>
         <div className="container">
-          <h1 style={{ color: 'var(--clr-text-inverse)', fontSize: '3rem', marginBottom: '1rem' }}>About Doyin Kenya</h1>
+          <h1 style={{ color: 'var(--clr-text-inverse)', fontSize: '3rem', marginBottom: '1rem' }}>About Doyin Pumps Kenya</h1>
           <p style={{ color: 'var(--clr-surface-metallic)', fontSize: '1.25rem', maxWidth: '800px', margin: '0 auto', lineHeight: '1.8' }}>
             Pioneering fluid mechanics and industrial engineering solutions across East Africa. We specialize in robust, deep-well submersible water pumps that drive communities and industries forward.
           </p>
@@ -117,7 +117,7 @@ const About = () => {
           <div style={{ flex: '1 1 400px' }}>
             <h2 style={{ fontSize: '2.5rem', marginBottom: '1.5rem', color: 'var(--clr-text-main)' }}>Our Mission & Vision</h2>
             <p style={{ color: 'var(--clr-text-muted)', fontSize: '1.1rem', lineHeight: '1.8', marginBottom: '1.5rem' }}>
-              At Doyin Kenya, we believe that access to reliable water and efficient fluid mechanics infrastructure is the backbone of modern development.
+              At Doyin Pumps Kenya, we believe that access to reliable water and efficient fluid mechanics infrastructure is the backbone of modern development.
             </p>
             <p style={{ color: 'var(--clr-text-muted)', fontSize: '1.1rem', lineHeight: '1.8', marginBottom: '2rem' }}>
               Our mission is to supply state-of-the-art submersible pumps and engineering solutions that exceed industry standards. With years of expertise in East Africa, we understand the specific environmental and industrial challenges of the region, and we engineer our solutions to overcome them effortlessly.
@@ -133,7 +133,7 @@ const About = () => {
                   width="100%" 
                   height="100%" 
                   src={getEmbedUrl(aboutVideo)} 
-                  title="Doyin Kenya Showcase" 
+                  title="Doyin Pumps Kenya Showcase" 
                   frameBorder="0" 
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
                   allowFullScreen
@@ -142,7 +142,7 @@ const About = () => {
             ) : aboutImage ? (
               <img 
                 src={`${API_ORIGIN}${aboutImage}`} 
-                alt="Doyin Kenya Industrial Pump" 
+                alt="Doyin Pumps Kenya Industrial Pump" 
                 loading="lazy"
                 decoding="async"
                 style={{
@@ -200,7 +200,7 @@ const About = () => {
             aspectRatio: '16/7',
           }}>
             <iframe
-              title="Doyin Kenya Warehouse Location"
+              title="Doyin Pumps Kenya Warehouse Location"
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d255281.14539785254!2d36.70730744863282!3d-1.3031933000000138!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x182f1172d84d49a7%3A0xf7cf0254b297924c!2sNairobi%2C%20Kenya!5e0!3m2!1sen!2ske!4v1712494034567!5m2!1sen!2ske"
               width="100%"
               height="100%"

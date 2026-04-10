@@ -45,8 +45,8 @@ const ChangePassword = () => {
       padding: '2rem'
     }}>
       <Seo
-        title="Change Password | Doyin Kenya Admin"
-        description="Doyin Kenya admin password update page."
+        title="Change Password | Doyin Pumps Kenya Admin"
+        description="Doyin Pumps Kenya admin password update page."
         path="/admin/change-password"
         noindex
         nofollow
