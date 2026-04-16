@@ -65,7 +65,13 @@ export function AuthProvider({ children }) {
     setMustChangePassword(false);
   };
 
-  const onPasswordChanged = () => setMustChangePassword(false);
+  const onPasswordChanged = (token) => {
+    if (token) {
+      sessionStorage.setItem(AUTH_TOKEN_KEY, token);
+    }
+
+    setMustChangePassword(false);
+  };
 
   return (
     <AuthContext.Provider value={{ user, mustChangePassword, loading, login, logout, onPasswordChanged }}>

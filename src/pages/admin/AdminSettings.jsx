@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Settings } from 'lucide-react';
 import api, { API_ORIGIN } from '../../services/api';
+import AdminPasswordChangePanel from '../../components/admin/AdminPasswordChangePanel';
 
 const AdminSettings = () => {
   const [settings, setSettings] = useState({
@@ -139,6 +140,14 @@ const AdminSettings = () => {
             </button>
           </div>
         </form>
+      </div>
+
+      <div style={{ marginTop: '2rem' }}>
+        <AdminPasswordChangePanel
+          title="Admin Login Security"
+          description="Change the admin password here. Every password update requires a one-time verification code sent to the admin email."
+          submitLabel="Change Admin Password"
+        />
       </div>
     </div>
   );

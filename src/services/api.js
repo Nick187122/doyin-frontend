@@ -2,7 +2,7 @@ import axios from 'axios';
 
 export const AUTH_TOKEN_KEY = 'admin_token';
 export const DEVICE_TOKEN_KEY = 'device_token';
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://doyin-kenya.duckdns.org/api';
 export const API_ORIGIN = new URL(API_BASE_URL).origin;
 
 const api = axios.create({
