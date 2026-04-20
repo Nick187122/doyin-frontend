@@ -113,7 +113,9 @@ const AdminSettings = () => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <label style={{ fontWeight: '600' }}>About Us Image</label>
             {aboutImage && !aboutImageFile && (
-              <img src={`${API_ORIGIN}${aboutImage}`} alt="Current About Image" style={{ maxWidth: '200px', borderRadius: 'var(--radius-md)', marginBottom: '0.5rem' }} />
+              <div style={{ width: '100%', maxWidth: '240px', aspectRatio: '4/3', borderRadius: 'var(--radius-md)', overflow: 'hidden', marginBottom: '0.5rem', background: 'var(--clr-surface-metallic)' }}>
+                <img src={`${API_ORIGIN}${aboutImage}`} alt="Current About Image" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 0 }} />
+              </div>
             )}
             <input type="file" accept="image/*" onChange={(e) => setAboutImageFile(e.target.files[0])} style={{ padding: '0.5rem', border: '1px solid var(--clr-border)', borderRadius: 'var(--radius-md)' }} />
             <span style={{ fontSize: '0.8rem', color: 'var(--clr-text-muted)' }}>Leave empty to keep the current image</span>

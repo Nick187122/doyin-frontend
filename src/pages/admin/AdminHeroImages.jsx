@@ -112,7 +112,9 @@ const AdminHeroImages = () => {
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
                         {images.map(img => (
                             <div key={img.id} style={{ border: '1px solid var(--clr-border)', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
-                                <img src={`${API_ORIGIN}${img.image_path}`} alt={img.title} style={{ width: '100%', height: '150px', objectFit: 'cover' }} />
+                                <div style={{ width: '100%', aspectRatio: '16/10', background: 'var(--clr-surface-metallic)' }}>
+                                    <img src={`${API_ORIGIN}${img.image_path}`} alt={img.title} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 0 }} />
+                                </div>
                                 <div style={{ padding: '1rem' }}>
                                     <p style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>{img.title || 'Untitled'}</p>
                                     <p style={{ fontSize: '0.875rem', color: 'var(--clr-text-muted)' }}>Order: {img.order}</p>

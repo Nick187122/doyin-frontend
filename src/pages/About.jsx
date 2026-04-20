@@ -140,18 +140,20 @@ const About = () => {
                 ></iframe>
               </div>
             ) : aboutImage ? (
-              <img 
-                src={`${API_ORIGIN}${aboutImage}`} 
-                alt="Doyin Pumps Kenya Industrial Pump" 
-                loading="lazy"
-                decoding="async"
-                style={{
-                  width: '100%', 
-                  maxWidth: '500px',
-                  borderRadius: 'var(--radius-lg)',
-                  boxShadow: 'var(--shadow-lg)'
-                }} 
-              />
+              <div style={{ width: '100%', maxWidth: '500px', aspectRatio: '4/3', borderRadius: 'var(--radius-lg)', overflow: 'hidden', boxShadow: 'var(--shadow-lg)', background: 'var(--clr-surface-metallic)' }}>
+                <img 
+                  src={`${API_ORIGIN}${aboutImage}`} 
+                  alt="Doyin Pumps Kenya Industrial Pump" 
+                  loading="lazy"
+                  decoding="async"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    borderRadius: 0
+                  }} 
+                />
+              </div>
             ) : (
               <div style={{ 
                 width: '100%', 
