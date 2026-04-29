@@ -203,7 +203,7 @@ const About = () => {
           }}>
             <iframe
               title="Doyin Pumps Kenya Warehouse Location"
-              src="https://www.google.com/maps/place/Omega+Business+Park/@-1.2418612,36.8807557,17z/data=!4m6!3m5!1s0x182f151501a7b933:0xdcd215fc3c632fd5!8m2!3d-1.2419142!4d36.8809205!16s%2Fg%2F11m_j7zh1y?hl=en&entry=ttu&g_ep=EgoyMDI2MDQyNi4wIKXMDSoASAFQAw%3D%3D"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d255281.14539785254!2d36.70730744863282!3d-1.3031933000000138!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x182f1172d84d49a7%3A0xf7cf0254b297924c!2sNairobi%2C%20Kenya!5e0!3m2!1sen!2ske!4v1712494034567!5m2!1sen!2ske"
               width="100%"
               height="100%"
               style={{ border: 0, display: 'block' }}
