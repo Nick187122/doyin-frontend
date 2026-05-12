@@ -23,6 +23,7 @@ const API_BASE_URL = (
 const OUTPUT_DIR = new URL('../public/', import.meta.url);
 const OUTPUT_FILE = new URL('../public/sitemap.xml', import.meta.url);
 const LOCAL_PRODUCT_EXPORT_SCRIPT = resolve(PROJECT_ROOT, '../doyin-backend/query_products.php');
+const SITEMAP_PRODUCTS_ENDPOINT = '/public/sitemap/products';
 
 const today = new Date().toISOString().split('T')[0];
 const isLocalApi = (value = '') => /localhost|127\.0\.0\.1/i.test(value);
@@ -37,10 +38,11 @@ async function fetchProducts() {
   const resolvedApiBaseUrl = mode === 'production' && isLocalApi(API_BASE_URL)
     ? 'https://doyin-kenya.duckdns.org/api'
     : API_BASE_URL;
-  const url = `${resolvedApiBaseUrl}/public/products`;
+  const sitemapUrl = `${resolvedApiBaseUrl}${SITEMAP_PRODUCTS_ENDPOINT}`;
+  const fallbackProductsUrl = `${resolvedApiBaseUrl}/public/products`;
 
   try {
-    const response = await fetch(url, {
+    const response = await fetch(sitemapUrl, {
       headers: { Accept: 'application/json' },
     });
 
@@ -62,10 +64,44 @@ async function fetchProducts() {
         lastmod: product.updated_at ? new Date(product.updated_at).toISOString().split('T')[0] : today,
       }));
   } catch (error) {
-    console.warn(`[sitemap] Failed to fetch products from ${url}. Falling back to static routes only.`);
+    console.warn(`[sitemap] Failed to fetch sitemap products from ${sitemapUrl}.`);
     console.warn(`[sitemap] ${error.message}`);
+  }
+
+  try {
+    const response = await fetch(fallbackProductsUrl, {
+      headers: { Accept: 'application/json' },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Unexpected status ${response.status}`);
+    }
+
+    const products = await response.json();
+    if (!Array.isArray(products)) {
+      throw new Error('Product payload was not an array');
+    }
+
+    return products
+      .filter((product) => product?.id != null)
+      .map((product) => ({
+        path: `/products/${product.id}`,
+        changefreq: 'weekly',
+        priority: '0.8',
+        lastmod: product.updated_at ? new Date(product.updated_at).toISOString().split('T')[0] : today,
+      }));
+  } catch (error) {
+    console.warn(`[sitemap] Failed to fetch public products from ${fallbackProductsUrl}.`);
+    console.warn(`[sitemap] ${error.message}`);
+  }
+
+  if (existsSync(LOCAL_PRODUCT_EXPORT_SCRIPT)) {
+    console.warn('[sitemap] Falling back to local product export script.');
     return fetchProductsFromLocalExport();
   }
+
+  console.warn('[sitemap] No remote or local product source was available. Using static routes only.');
+  return [];
 }
 
 async function fetchProductsFromLocalExport() {
