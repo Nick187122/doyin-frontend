@@ -11,9 +11,22 @@ const AdminSettings = () => {
     contact_address: 'Nairobi, Kenya',
     facebook_url: '',
     instagram_url: '',
-    about_video_url: ''
+    about_video_url: '',
+    homepage_new_arrivals_enabled: '1',
+    homepage_new_arrivals_badge: 'New Arrivals',
+    homepage_new_arrivals_title: 'Fresh stock ready for specification.',
+    homepage_new_arrivals_copy: 'Discover the latest additions to the catalog, with current stock status and fast paths to enquiry.',
+    homepage_new_arrivals_count: '4',
+    homepage_new_arrivals_category_id: '',
+    homepage_featured_products_enabled: '1',
+    homepage_featured_products_badge: 'Featured Products',
+    homepage_featured_products_title: 'Priority models we want customers to see first.',
+    homepage_featured_products_copy: 'Hand-picked products from the catalog, curated manually from admin for stronger homepage merchandising.',
+    homepage_featured_product_ids: '',
   });
   const [aboutImage, setAboutImage] = useState('');
+  const [categories, setCategories] = useState([]);
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [aboutImageFile, setAboutImageFile] = useState(null);
@@ -30,8 +43,34 @@ const AdminSettings = () => {
         console.error('Error fetching settings', error);
       }
     };
+
+    const fetchCategories = async () => {
+      try {
+        const response = await api.get('/public/categories');
+        setCategories(response.data || []);
+      } catch (error) {
+        console.error('Error fetching categories', error);
+      }
+    };
+
+    const fetchProducts = async () => {
+      try {
+        const response = await api.get('/public/products');
+        setProducts(response.data || []);
+      } catch (error) {
+        console.error('Error fetching products', error);
+      }
+    };
+
     fetchSettings();
+    fetchCategories();
+    fetchProducts();
   }, []);
+
+  const featuredProductIds = String(settings.homepage_featured_product_ids || '')
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
 
   const handleChange = (e) => {
     setSettings({ ...settings, [e.target.name]: e.target.value });
@@ -43,7 +82,7 @@ const AdminSettings = () => {
     setMessage('');
     try {
       const formData = new FormData();
-      ['store_name', 'contact_email', 'contact_phone', 'contact_address', 'facebook_url', 'instagram_url', 'about_video_url'].forEach(key => {
+      ['store_name', 'contact_email', 'contact_phone', 'contact_address', 'facebook_url', 'instagram_url', 'about_video_url', 'homepage_new_arrivals_enabled', 'homepage_new_arrivals_badge', 'homepage_new_arrivals_title', 'homepage_new_arrivals_copy', 'homepage_new_arrivals_count', 'homepage_new_arrivals_category_id', 'homepage_featured_products_enabled', 'homepage_featured_products_badge', 'homepage_featured_products_title', 'homepage_featured_products_copy', 'homepage_featured_product_ids'].forEach(key => {
         if (settings[key] !== null && settings[key] !== undefined) {
           formData.append(`settings[${key}]`, settings[key]);
         }
@@ -134,6 +173,117 @@ const AdminSettings = () => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <label style={{ fontWeight: '600' }}>Instagram URL</label>
             <input type="url" name="instagram_url" value={settings.instagram_url} onChange={handleChange} placeholder="https://instagram.com/..." style={{ padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--clr-border)' }} />
+          </div>
+
+          <h4 style={{ marginTop: '1rem', borderTop: '1px solid var(--clr-border)', paddingTop: '1rem' }}>Homepage Merchandising</h4>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <input
+              id="homepage_new_arrivals_enabled"
+              type="checkbox"
+              checked={settings.homepage_new_arrivals_enabled === '1'}
+              onChange={(e) => setSettings(prev => ({
+                ...prev,
+                homepage_new_arrivals_enabled: e.target.checked ? '1' : '0',
+              }))}
+            />
+            <label htmlFor="homepage_new_arrivals_enabled" style={{ fontWeight: '600' }}>
+              Show New Arrivals section on homepage
+            </label>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <label style={{ fontWeight: '600' }}>Section Badge</label>
+            <input type="text" name="homepage_new_arrivals_badge" value={settings.homepage_new_arrivals_badge || ''} onChange={handleChange} placeholder="New Arrivals" style={{ padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--clr-border)' }} />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <label style={{ fontWeight: '600' }}>Section Title</label>
+            <input type="text" name="homepage_new_arrivals_title" value={settings.homepage_new_arrivals_title || ''} onChange={handleChange} placeholder="Fresh stock ready for specification." style={{ padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--clr-border)' }} />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <label style={{ fontWeight: '600' }}>Section Copy</label>
+            <textarea name="homepage_new_arrivals_copy" value={settings.homepage_new_arrivals_copy || ''} onChange={handleChange} rows={4} style={{ padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--clr-border)', resize: 'vertical' }} />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <label style={{ fontWeight: '600' }}>How Many Products</label>
+              <input type="number" min="1" max="12" name="homepage_new_arrivals_count" value={settings.homepage_new_arrivals_count || '4'} onChange={handleChange} style={{ padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--clr-border)' }} />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <label style={{ fontWeight: '600' }}>Optional Category Filter</label>
+              <select name="homepage_new_arrivals_category_id" value={settings.homepage_new_arrivals_category_id || ''} onChange={handleChange} style={{ padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--clr-border)' }}>
+                <option value="">All categories</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={String(category.id)}>{category.name}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <span style={{ fontSize: '0.8rem', color: 'var(--clr-text-muted)' }}>
+            This section automatically uses the newest products already in your inventory and can optionally focus on one category.
+          </span>
+
+          <h4 style={{ marginTop: '1rem', borderTop: '1px solid var(--clr-border)', paddingTop: '1rem' }}>Featured Products</h4>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <input
+              id="homepage_featured_products_enabled"
+              type="checkbox"
+              checked={settings.homepage_featured_products_enabled === '1'}
+              onChange={(e) => setSettings(prev => ({
+                ...prev,
+                homepage_featured_products_enabled: e.target.checked ? '1' : '0',
+              }))}
+            />
+            <label htmlFor="homepage_featured_products_enabled" style={{ fontWeight: '600' }}>
+              Show Featured Products section on homepage
+            </label>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <label style={{ fontWeight: '600' }}>Section Badge</label>
+            <input type="text" name="homepage_featured_products_badge" value={settings.homepage_featured_products_badge || ''} onChange={handleChange} placeholder="Featured Products" style={{ padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--clr-border)' }} />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <label style={{ fontWeight: '600' }}>Section Title</label>
+            <input type="text" name="homepage_featured_products_title" value={settings.homepage_featured_products_title || ''} onChange={handleChange} placeholder="Priority models we want customers to see first." style={{ padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--clr-border)' }} />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <label style={{ fontWeight: '600' }}>Section Copy</label>
+            <textarea name="homepage_featured_products_copy" value={settings.homepage_featured_products_copy || ''} onChange={handleChange} rows={4} style={{ padding: '0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--clr-border)', resize: 'vertical' }} />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <label style={{ fontWeight: '600' }}>Choose Featured Products</label>
+            <div style={{ display: 'grid', gap: '0.6rem', maxHeight: '260px', overflowY: 'auto', border: '1px solid var(--clr-border)', borderRadius: 'var(--radius-md)', padding: '0.9rem', background: 'rgba(255,255,255,0.7)' }}>
+              {products.map((product) => {
+                const productId = String(product.id);
+                const checked = featuredProductIds.includes(productId);
+
+                return (
+                  <label key={product.id} style={{ display: 'flex', alignItems: 'start', gap: '0.7rem', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={(e) => {
+                        const nextIds = e.target.checked
+                          ? [...featuredProductIds, productId]
+                          : featuredProductIds.filter((id) => id !== productId);
+
+                        setSettings(prev => ({
+                          ...prev,
+                          homepage_featured_product_ids: Array.from(new Set(nextIds)).join(','),
+                        }));
+                      }}
+                    />
+                    <span>
+                      <strong style={{ display: 'block' }}>{product.name}</strong>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--clr-text-muted)' }}>
+                        {product.category?.name || 'Uncategorized'} · {product.in_stock ? 'In stock' : 'Out of stock'}
+                      </span>
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+            <span style={{ fontSize: '0.8rem', color: 'var(--clr-text-muted)' }}>
+              Pick the exact products you want shown. Their order follows the selection order saved in settings.
+            </span>
           </div>
 
           <div>
