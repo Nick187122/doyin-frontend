@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import api from '../services/api';
 
@@ -10,6 +11,17 @@ const DEFAULT_SETTINGS = {
   contact_phone: '+254 742 167 151',
   contact_email: 'info@doyinkenya.com',
   contact_address: 'Nairobi, Kenya',
+  homepage_new_arrivals_enabled: '1',
+  homepage_new_arrivals_badge: 'New Arrivals',
+  homepage_new_arrivals_title: 'Fresh stock ready for specification.',
+  homepage_new_arrivals_copy: 'Discover the latest additions to the catalog, with current stock status and fast paths to enquiry.',
+  homepage_new_arrivals_count: '4',
+  homepage_new_arrivals_category_id: '',
+  homepage_featured_products_enabled: '1',
+  homepage_featured_products_badge: 'Featured Products',
+  homepage_featured_products_title: 'Priority models we want customers to see first.',
+  homepage_featured_products_copy: 'Hand-picked products from the catalog, curated manually from admin for stronger homepage merchandising.',
+  homepage_featured_product_ids: '',
 };
 
 const PublicSiteContext = createContext({
