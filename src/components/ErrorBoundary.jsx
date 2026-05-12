@@ -8,7 +8,7 @@ class ErrorBoundary extends React.Component {
     this.state = { hasError: false };
   }
 
-  static getDerivedStateFromError(error) {
+  static getDerivedStateFromError() {
     return { hasError: true };
   }
 
@@ -21,8 +21,8 @@ class ErrorBoundary extends React.Component {
           name: 'System Auto-Tracker',
           content: errorData.substring(0, 5000) // Ensure it fits in the field
       });
-    } catch (e) {
-      console.error('Failed to report issue', e);
+    } catch {
+      console.error('Failed to report issue');
     }
   }
 

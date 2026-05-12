@@ -1,11 +1,31 @@
 import { mkdir, writeFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+import { execFile } from 'node:child_process';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { promisify } from 'node:util';
+import { loadEnv } from 'vite';
 
-const SITE_URL = (process.env.SITE_URL || 'https://doyin-kenya.com').replace(/\/+$/, '');
-const API_BASE_URL = (process.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api').replace(/\/+$/, '');
+const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
+const PROJECT_ROOT = resolve(SCRIPT_DIR, '..');
+const execFileAsync = promisify(execFile);
+const mode = process.env.NODE_ENV || 'production';
+const env = loadEnv(mode, PROJECT_ROOT, '');
+
+const SITE_URL = (env.SITE_URL || process.env.SITE_URL || 'https://doyin-kenya.com').replace(/\/+$/, '');
+const API_BASE_URL = (
+  env.SITEMAP_API_BASE_URL
+  || env.VITE_API_BASE_URL
+  || process.env.SITEMAP_API_BASE_URL
+  || process.env.VITE_API_BASE_URL
+  || 'https://doyin-kenya.duckdns.org/api'
+).replace(/\/+$/, '');
 const OUTPUT_DIR = new URL('../public/', import.meta.url);
 const OUTPUT_FILE = new URL('../public/sitemap.xml', import.meta.url);
+const LOCAL_PRODUCT_EXPORT_SCRIPT = resolve(PROJECT_ROOT, '../doyin-backend/query_products.php');
 
 const today = new Date().toISOString().split('T')[0];
+const isLocalApi = (value = '') => /localhost|127\.0\.0\.1/i.test(value);
 
 const staticRoutes = [
   { path: '/', changefreq: 'weekly', priority: '1.0' },
@@ -14,7 +34,10 @@ const staticRoutes = [
 ];
 
 async function fetchProducts() {
-  const url = `${API_BASE_URL}/public/products`;
+  const resolvedApiBaseUrl = mode === 'production' && isLocalApi(API_BASE_URL)
+    ? 'https://doyin-kenya.duckdns.org/api'
+    : API_BASE_URL;
+  const url = `${resolvedApiBaseUrl}/public/products`;
 
   try {
     const response = await fetch(url, {
@@ -40,6 +63,38 @@ async function fetchProducts() {
       }));
   } catch (error) {
     console.warn(`[sitemap] Failed to fetch products from ${url}. Falling back to static routes only.`);
+    console.warn(`[sitemap] ${error.message}`);
+    return fetchProductsFromLocalExport();
+  }
+}
+
+async function fetchProductsFromLocalExport() {
+  if (!existsSync(LOCAL_PRODUCT_EXPORT_SCRIPT)) {
+    return [];
+  }
+
+  try {
+    const { stdout } = await execFileAsync('php', [LOCAL_PRODUCT_EXPORT_SCRIPT], {
+      cwd: PROJECT_ROOT,
+    });
+
+    return stdout
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line) => {
+        const [id, updatedAt] = line.split('|');
+        const lastmod = updatedAt ? new Date(updatedAt).toISOString().split('T')[0] : today;
+
+        return {
+          path: `/products/${id}`,
+          changefreq: 'weekly',
+          priority: '0.8',
+          lastmod,
+        };
+      });
+  } catch (error) {
+    console.warn('[sitemap] Local product export fallback also failed.');
     console.warn(`[sitemap] ${error.message}`);
     return [];
   }
@@ -70,6 +125,10 @@ async function main() {
 
   await mkdir(OUTPUT_DIR, { recursive: true });
   await writeFile(OUTPUT_FILE, xml, 'utf8');
+
+  if (productRoutes.length === 0) {
+    console.warn('[sitemap] Product URLs were not included. Check SITEMAP_API_BASE_URL or VITE_API_BASE_URL for the build environment.');
+  }
 
   console.log(`[sitemap] Wrote ${urls.length} URL(s) to ${OUTPUT_FILE.pathname}`);
 }

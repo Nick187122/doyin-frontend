@@ -16,7 +16,9 @@ const AdminDashboard = () => {
         // Compute top products based on view_count
         const sorted = [...pRes.data].sort((a, b) => (b.views_count || 0) - (a.views_count || 0));
         setTopProducts(sorted.slice(0, 5));
-      } catch {}
+      } catch {
+        setTopProducts([]);
+      }
       finally { setLoading(false); }
     };
     fetchStats();

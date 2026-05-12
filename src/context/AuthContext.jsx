@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import api, { AUTH_TOKEN_KEY, DEVICE_TOKEN_KEY } from '../services/api';
 
@@ -57,7 +58,9 @@ export function AuthProvider({ children }) {
   const logout = async () => {
     try {
       await api.post('/logout');
-    } catch {}
+    } catch {
+      // Ignore logout failures and clear the local session regardless.
+    }
 
     sessionStorage.removeItem(AUTH_TOKEN_KEY);
     sessionStorage.removeItem(DEVICE_TOKEN_KEY);
