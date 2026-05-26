@@ -100,6 +100,17 @@
 .product-card {
   overflow: hidden;
   padding: 0;
+  display: block;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-3px);
+}
+
+.product-card:focus-visible {
+  outline: 3px solid rgba(2, 101, 192, 0.28);
+  outline-offset: 3px;
 }
 
 .product-card-media {

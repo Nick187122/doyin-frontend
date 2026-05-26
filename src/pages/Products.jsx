@@ -181,7 +181,12 @@ const Products = () => {
       ) : (
         <div className="products-grid">
           {filtered.map((product) => (
-            <div key={product.id} className="card product-card">
+            <Link
+              key={product.id}
+              to={`/products/${product.id}`}
+              className="card product-card"
+              style={{ textDecoration: 'none', color: 'inherit' }}
+            >
               <div className="product-card-media">
                 {product.image_url ? (
                   <img src={product.image_url} alt={product.name} loading="lazy" decoding="async" />
@@ -235,11 +240,11 @@ const Products = () => {
                   )}
                 </div>
 
-                <Link to={`/products/${product.id}`} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', marginTop: 'auto' }}>
+                <div className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', marginTop: 'auto' }}>
                   View Details
-                </Link>
+                </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       )}

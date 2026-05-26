@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Package, Plus, Trash2, Edit2, X, Check, AlertCircle, ImageIcon, Zap, Search, MessageCircle } from 'lucide-react';
+import { Package, Plus, Trash2, Edit2, X, Check, AlertCircle, ImageIcon, Zap, Search, MessageCircle, Eye } from 'lucide-react';
 import api from '../../services/api';
 
 const EMPTY_FORM = {
@@ -25,6 +25,12 @@ const clearPumpFields = (currentForm) => ({
 const getCategoryLabel = (category) => `${category.name}${category.is_pump ? ' (Pump)' : ' (Other)'}${category.has_ideal_power ? ' [Ideal Power]' : ''}`;
 
 const normalizeText = (value) => String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+const truncateText = (value, maxLength = 90) => {
+  const normalized = String(value || '').replace(/\s+/g, ' ').trim();
+  if (!normalized) return '';
+  if (normalized.length <= maxLength) return normalized;
+  return `${normalized.slice(0, maxLength - 3).trim()}...`;
+};
 
 const AdminInventory = () => {
   const [products, setProducts] = useState([]);
@@ -39,6 +45,7 @@ const AdminInventory = () => {
   const [similarProduct, setSimilarProduct] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [previewProduct, setPreviewProduct] = useState(null);
   const fileRef = useRef();
 
   const selectedCategory = categories.find((c) => String(c.id) === String(form.category_id));
@@ -391,6 +398,103 @@ const AdminInventory = () => {
         </div>
       )}
 
+      {previewProduct && (
+        <div
+          onClick={() => setPreviewProduct(null)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15, 23, 42, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1.5rem',
+            zIndex: 1200,
+          }}
+        >
+          <div
+            className="card"
+            onClick={(e) => e.stopPropagation()}
+            style={{ width: 'min(720px, 100%)', maxHeight: '85vh', overflowY: 'auto', padding: '1.5rem' }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+              <div>
+                <p style={{ margin: 0, fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--clr-brand-primary)' }}>
+                  Product Preview
+                </p>
+                <h3 style={{ margin: '0.35rem 0 0' }}>{previewProduct.name}</h3>
+              </div>
+              <button onClick={() => setPreviewProduct(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--clr-text-muted)', display: 'flex' }}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(160px, 220px) 1fr', gap: '1.25rem', alignItems: 'start' }}>
+              <div style={{ borderRadius: 'var(--radius-lg)', overflow: 'hidden', background: 'var(--clr-surface-metallic)', minHeight: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {previewProduct.image_url ? (
+                  <img src={previewProduct.image_url} alt={previewProduct.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <Package size={36} color="var(--clr-text-muted)" />
+                )}
+              </div>
+
+              <div>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+                  <span className="badge" style={{ background: 'rgba(2,101,192,0.1)', color: 'var(--clr-brand-primary)', border: '1px solid rgba(2,101,192,0.2)', fontSize: '0.75rem', padding: '0.28rem 0.65rem', borderRadius: 'var(--radius-full)', fontWeight: 600 }}>
+                    {previewProduct.category?.name || 'Uncategorized'}
+                  </span>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 600, padding: '0.28rem 0.65rem', borderRadius: 'var(--radius-full)', background: previewProduct.in_stock ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)', color: previewProduct.in_stock ? '#10b981' : '#ef4444' }}>
+                    {previewProduct.in_stock ? 'In Stock' : 'Out of Stock'}
+                  </span>
+                </div>
+
+                <div style={{ marginBottom: '1rem' }}>
+                  <strong style={{ display: 'block', marginBottom: '0.4rem' }}>Description</strong>
+                  <p style={{ margin: 0, color: 'var(--clr-text-muted)', lineHeight: 1.7 }}>
+                    {previewProduct.description || 'No description has been added for this product yet.'}
+                  </p>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '0.75rem' }}>
+                  <div style={{ padding: '0.85rem', border: '1px solid var(--clr-border)', borderRadius: 'var(--radius-md)', background: 'var(--clr-bg-page)' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--clr-text-muted)', marginBottom: '0.3rem' }}>Flow Rate</div>
+                    <strong>{previewProduct.max_flow_rate || '-'}</strong>
+                  </div>
+                  <div style={{ padding: '0.85rem', border: '1px solid var(--clr-border)', borderRadius: 'var(--radius-md)', background: 'var(--clr-bg-page)' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--clr-text-muted)', marginBottom: '0.3rem' }}>Max Height</div>
+                    <strong>{previewProduct.max_height || '-'}</strong>
+                  </div>
+                  <div style={{ padding: '0.85rem', border: '1px solid var(--clr-border)', borderRadius: 'var(--radius-md)', background: 'var(--clr-bg-page)' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--clr-text-muted)', marginBottom: '0.3rem' }}>Depth</div>
+                    <strong>{previewProduct.recommended_depth || '-'}</strong>
+                  </div>
+                  <div style={{ padding: '0.85rem', border: '1px solid var(--clr-border)', borderRadius: 'var(--radius-md)', background: 'var(--clr-bg-page)' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--clr-text-muted)', marginBottom: '0.3rem' }}>Ideal Power</div>
+                    <strong>{previewProduct.ideal_power || '-'}</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem' }}>
+              <button
+                type="button"
+                className="btn btn-outline"
+                onClick={() => {
+                  setPreviewProduct(null);
+                  openEdit(previewProduct);
+                }}
+              >
+                <Edit2 size={16} /> Edit Product
+              </button>
+              <button type="button" className="btn btn-primary" onClick={() => setPreviewProduct(null)}>
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {loading ? (
         <p style={{ textAlign: 'center', color: 'var(--clr-text-muted)', padding: '3rem' }}>Loading products...</p>
       ) : filteredProducts.length === 0 ? (
@@ -423,6 +527,7 @@ const AdminInventory = () => {
               <tr style={{ background: 'var(--clr-surface-metallic)' }}>
                 <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 700, fontSize: '0.85rem' }}>Product</th>
                 <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 700, fontSize: '0.85rem' }}>Category</th>
+                <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 700, fontSize: '0.85rem' }}>Description</th>
                 <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 700, fontSize: '0.85rem' }}>Flow Rate</th>
                 <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 700, fontSize: '0.85rem' }}>Max Height</th>
                 <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 700, fontSize: '0.85rem' }}>Depth</th>
@@ -450,11 +555,17 @@ const AdminInventory = () => {
                       </div>
                     </td>
                     <td style={{ padding: '1rem' }}><span className="badge" style={{ background: 'rgba(2,101,192,0.1)', color: 'var(--clr-brand-primary)', border: '1px solid rgba(2,101,192,0.2)', fontSize: '0.75rem', padding: '0.2rem 0.5rem', borderRadius: 'var(--radius-full)', fontWeight: 600 }}>{product.category?.name || '-'}</span></td>
+                    <td style={{ padding: '1rem', fontSize: '0.9rem', color: 'var(--clr-text-muted)', minWidth: '220px' }}>
+                      {product.description ? truncateText(product.description) : 'No description'}
+                    </td>
                     <td style={{ padding: '1rem', fontSize: '0.9rem', color: 'var(--clr-text-muted)' }}>{product.max_flow_rate || '-'}</td>
                     <td style={{ padding: '1rem', fontSize: '0.9rem', color: 'var(--clr-text-muted)' }}>{product.max_height || '-'}</td>
                     <td style={{ padding: '1rem', fontSize: '0.9rem', color: 'var(--clr-text-muted)' }}>{product.recommended_depth || '-'}</td>
                     <td style={{ padding: '1rem', textAlign: 'center' }}>
                       <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                        <button onClick={() => setPreviewProduct(product)} style={{ background: 'none', border: '1px solid var(--clr-border)', borderRadius: 'var(--radius-sm)', padding: '0.4rem', cursor: 'pointer', color: 'var(--clr-text-muted)', display: 'flex' }} title="View product details">
+                          <Eye size={15} />
+                        </button>
                         <button onClick={() => openEdit(product)} style={{ background: 'none', border: '1px solid var(--clr-border)', borderRadius: 'var(--radius-sm)', padding: '0.4rem', cursor: 'pointer', color: 'var(--clr-text-muted)', display: 'flex' }}><Edit2 size={15} /></button>
                         <button onClick={() => setDeleteConfirm(product.id)} style={{ background: 'none', border: '1px solid #fecaca', borderRadius: 'var(--radius-sm)', padding: '0.4rem', cursor: 'pointer', color: '#dc2626', display: 'flex' }}><Trash2 size={15} /></button>
                       </div>
