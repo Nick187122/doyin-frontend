@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 
 const DEFAULT_TITLE = 'Doyin Pumps Kenya | Submersible Water Pumps and Industrial Pump Solutions';
 const DEFAULT_DESCRIPTION = 'Doyin Pumps Kenya supplies submersible water pumps, borehole pumps, accessories, and industrial fluid handling solutions across Kenya.';
-const DEFAULT_OG_IMAGE = '/images/logo.png';
+const DEFAULT_OG_IMAGE = '/images/logo.jpg';
 
 function upsertMeta(selector, attributes) {
   let element = document.head.querySelector(selector);

@@ -124,7 +124,7 @@ const ProductDetails = () => {
         description={productDescription}
         path={`/products/${product.id}`}
         type="product"
-        image={product.image_url || '/images/logo.png'}
+        image={product.image_url || '/images/logo.jpg'}
       />
 
       <Link to="/products" className="product-detail-back">
