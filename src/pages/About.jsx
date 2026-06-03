@@ -242,7 +242,7 @@ const About = () => {
           <div className="about-map-frame">
             <iframe
               title="Doyin Pumps Kenya Warehouse Location"
-              src="https://maps.google.com/maps?q=Omega+Business+Park,+Nairobi&t=&z=15&ie=UTF8&iwloc=&output=embed"
+              src="https://maps.google.com/maps?q=-1.2419142,36.8809205&t=&z=17&ie=UTF8&iwloc=&output=embed"
               width="100%"
               height="100%"
               style={{ border: 0, display: 'block' }}

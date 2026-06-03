@@ -42,7 +42,7 @@ const AdminLogin = () => {
       />
       <div className="login-card">
         <div className="login-logo">
-          <img src="/images/logo.jpg" alt="Doyin Pumps Kenya logo" className="login-logo-image" />
+          <img src="/images/logo.png" alt="Doyin Pumps Kenya logo" className="login-logo-image" />
           <h1>Doyin Pumps Kenya</h1>
           <p>Administration Portal</p>
         </div>

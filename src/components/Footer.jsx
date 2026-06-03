@@ -50,7 +50,7 @@ const Footer = () => {
           <p>
             Created by{' '}
             <a
-              href="https://github.com/Nick187122"
+              href="https://wa.me/254731316717"
               target="_blank"
               rel="noopener noreferrer"
             >
