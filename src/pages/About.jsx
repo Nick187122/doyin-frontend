@@ -199,7 +199,7 @@ const About = () => {
             ) : aboutImage ? (
               <div className="about-media-frame image">
                 <img
-                  src={`${API_ORIGIN}${aboutImage}`}
+                  src={aboutImage}
                   alt="Doyin Pumps Kenya industrial pump"
                   loading="lazy"
                   decoding="async"

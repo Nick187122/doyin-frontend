@@ -113,7 +113,7 @@ const AdminHeroImages = () => {
                         {images.map(img => (
                             <div key={img.id} style={{ border: '1px solid var(--clr-border)', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
                                 <div style={{ width: '100%', aspectRatio: '16/10', background: 'var(--clr-surface-metallic)' }}>
-                                    <img src={`${API_ORIGIN}${img.image_path}`} alt={img.title} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 0 }} />
+                                    <img src={img.image_url || `${API_ORIGIN}${img.image_path}`} alt={img.title} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 0 }} />
                                 </div>
                                 <div style={{ padding: '1rem' }}>
                                     <p style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>{img.title || 'Untitled'}</p>

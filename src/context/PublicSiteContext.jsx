@@ -27,6 +27,7 @@ const DEFAULT_SETTINGS = {
 const PublicSiteContext = createContext({
   settings: DEFAULT_SETTINGS,
   heroImages: [],
+  testimonials: [],
   loading: true,
 });
 
@@ -61,6 +62,7 @@ export function PublicSiteProvider({ children }) {
   const cachedData = readCachedPublicSiteData();
   const [settings, setSettings] = useState(cachedData?.settings || DEFAULT_SETTINGS);
   const [heroImages, setHeroImages] = useState(cachedData?.heroImages || []);
+  const [testimonials, setTestimonials] = useState(cachedData?.testimonials || []);
   const [loading, setLoading] = useState(!cachedData);
 
   useEffect(() => {
@@ -68,9 +70,10 @@ export function PublicSiteProvider({ children }) {
 
     const fetchPublicSiteData = async () => {
       try {
-        const [settingsResponse, heroImagesResponse] = await Promise.all([
+        const [settingsResponse, heroImagesResponse, testimonialsResponse] = await Promise.all([
           api.get('/public/settings'),
           api.get('/public/hero-images'),
+          api.get('/public/testimonials'),
         ]);
 
         if (cancelled) return;
@@ -78,10 +81,12 @@ export function PublicSiteProvider({ children }) {
         const nextData = {
           settings: { ...DEFAULT_SETTINGS, ...settingsResponse.data },
           heroImages: heroImagesResponse.data || [],
+          testimonials: testimonialsResponse.data || [],
         };
 
         setSettings(nextData.settings);
         setHeroImages(nextData.heroImages);
+        setTestimonials(nextData.testimonials);
         writeCachedPublicSiteData(nextData);
       } catch (error) {
         if (!cancelled) {
@@ -102,7 +107,7 @@ export function PublicSiteProvider({ children }) {
   }, []);
 
   return (
-    <PublicSiteContext.Provider value={{ settings, heroImages, loading }}>
+    <PublicSiteContext.Provider value={{ settings, heroImages, testimonials, loading }}>
       {children}
     </PublicSiteContext.Provider>
   );

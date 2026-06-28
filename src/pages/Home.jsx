@@ -17,6 +17,8 @@ import {
   CircleCheck,
   TrendingUp,
   Eye,
+  Star,
+  Quote,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
@@ -41,7 +43,7 @@ const categoryIcon = (name = '') => {
 };
 
 const Home = () => {
-  const { heroImages, settings } = usePublicSite();
+  const { heroImages, settings, testimonials } = usePublicSite();
   const { categories, products } = usePublicCatalog();
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -402,6 +404,63 @@ const Home = () => {
               <Link to="/products" className="btn btn-outline">
                 <Droplets size={18} /> View All Products
               </Link>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {testimonials.length > 0 && (
+        <section className="home-testimonials section-padding">
+          <div className="container">
+            <div className="home-section-heading text-center">
+              <div className="eyebrow">Testimonials</div>
+              <h2>What our clients say.</h2>
+              <p className="section-copy home-section-copy">
+                Real feedback from customers who trust our pump systems for their water infrastructure.
+              </p>
+            </div>
+
+            <div className="testimonials-grid">
+              {testimonials.map((testimonial) => (
+                <div key={testimonial.id} className="card testimonial-card">
+                  <div className="testimonial-stars">
+                    {Array.from({ length: 5 }, (_, i) => (
+                      <Star
+                        key={i}
+                        size={16}
+                        fill={i < (testimonial.rating || 5) ? '#f59e0b' : 'none'}
+                        color={i < (testimonial.rating || 5) ? '#f59e0b' : '#d1d5db'}
+                      />
+                    ))}
+                  </div>
+                  {testimonial.video_url && (
+                    <div className="testimonial-video">
+                      <video src={testimonial.video_url} controls preload="metadata" style={{ width: '100%', borderRadius: 'var(--radius-md)', marginBottom: '1rem' }} />
+                    </div>
+                  )}
+                  <div className="testimonial-quote">
+                    <Quote size={20} className="testimonial-quote-icon" />
+                    <p>&ldquo;{testimonial.content}&rdquo;</p>
+                  </div>
+                  <div className="testimonial-author">
+                    <div className="testimonial-avatar">
+                      {testimonial.avatar_url ? (
+                        <img src={testimonial.avatar_url} alt={testimonial.name} loading="lazy" decoding="async" />
+                      ) : (
+                        <div className="testimonial-avatar-fallback">
+                          {testimonial.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    <div className="testimonial-author-info">
+                      <strong>{testimonial.name}</strong>
+                      {(testimonial.title || testimonial.company) && (
+                        <span>{[testimonial.title, testimonial.company].filter(Boolean).join(' · ')}</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </section>

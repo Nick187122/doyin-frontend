@@ -22,6 +22,7 @@ const AdminSettings = lazy(() => import('./pages/admin/AdminSettings'));
 const AdminMessages = lazy(() => import('./pages/admin/AdminMessages'));
 const ReportIssueWidget = lazy(() => import('./components/ReportIssueWidget'));
 const AdminSalespersons = lazy(() => import('./pages/admin/AdminSalespersons'));
+const AdminTestimonials = lazy(() => import('./pages/admin/AdminTestimonials'));
 
 const RouteLoader = () => (
   <div
@@ -142,6 +143,14 @@ function App() {
                 element={
                   <Suspense fallback={<RouteLoader />}>
                     <AdminSettings />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="testimonials"
+                element={
+                  <Suspense fallback={<RouteLoader />}>
+                    <AdminTestimonials />
                   </Suspense>
                 }
               />
