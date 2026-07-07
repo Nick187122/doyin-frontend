@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Package, Plus, Trash2, Edit2, X, Check, AlertCircle, ImageIcon, Zap, Search, MessageCircle, Eye } from 'lucide-react';
+import { Package, Plus, Trash2, Edit2, X, Check, AlertCircle, ImageIcon, Zap, Search, MessageCircle, Eye, BarChart3 } from 'lucide-react';
 import api from '../../services/api';
 
 const EMPTY_FORM = {
@@ -10,6 +10,7 @@ const EMPTY_FORM = {
   max_height: '',
   recommended_depth: '',
   ideal_power: '',
+  performance_curves: [],
   image: null,
   in_stock: true,
 };
@@ -20,6 +21,7 @@ const clearPumpFields = (currentForm) => ({
   max_height: '',
   recommended_depth: '',
   ideal_power: '',
+  performance_curves: [],
 });
 
 const getCategoryLabel = (category) => `${category.name}${category.is_pump ? ' (Pump)' : ' (Other)'}${category.has_ideal_power ? ' [Ideal Power]' : ''}`;
@@ -115,6 +117,7 @@ const AdminInventory = () => {
       max_height: product.max_height || '',
       recommended_depth: product.recommended_depth || '',
       ideal_power: product.ideal_power || '',
+      performance_curves: Array.isArray(product.performance_curves) ? product.performance_curves : [],
       image: null,
       in_stock: product.in_stock !== undefined ? product.in_stock : true,
     });
@@ -129,6 +132,45 @@ const AdminInventory = () => {
     if (!file) return;
     setForm({ ...form, image: file });
     setImagePreview(URL.createObjectURL(file));
+  };
+
+  const addCurveRow = () => {
+    const newRow = { flow_rate_m3h: '', flow_rate_lmin: '', head_m: '' };
+    setForm((current) => ({
+      ...current,
+      performance_curves: [...(current.performance_curves || []), newRow],
+    }));
+  };
+
+  const removeCurveRow = (index) => {
+    setForm((current) => ({
+      ...current,
+      performance_curves: (current.performance_curves || []).filter((_, i) => i !== index),
+    }));
+  };
+
+  const updateCurveRow = (index, field, value) => {
+    setForm((current) => {
+      const updated = [...(current.performance_curves || [])];
+      updated[index] = { ...updated[index], [field]: value };
+
+      // Auto-calculate flow rate in l/min when m3/h changes
+      if (field === 'flow_rate_m3h' && value !== '') {
+        const m3h = parseFloat(value);
+        if (!isNaN(m3h)) {
+          updated[index].flow_rate_lmin = Math.round(m3h * 1000 / 60).toString();
+        }
+      }
+      // Auto-calculate flow rate in m3/h when l/min changes
+      if (field === 'flow_rate_lmin' && value !== '') {
+        const lmin = parseFloat(value);
+        if (!isNaN(lmin)) {
+          updated[index].flow_rate_m3h = (lmin * 60 / 1000).toFixed(1);
+        }
+      }
+
+      return { ...current, performance_curves: updated };
+    });
   };
 
   const handleCategoryChange = (categoryId) => {
@@ -169,6 +211,8 @@ const AdminInventory = () => {
     Object.entries(preparedForm).forEach(([k, v]) => {
       if (k === 'in_stock') {
         fd.append(k, v ? 1 : 0);
+      } else if (k === 'performance_curves') {
+        fd.append(k, JSON.stringify(v || []));
       } else if (k !== 'image' && v !== null) {
         fd.append(k, v);
       }
@@ -211,6 +255,8 @@ const AdminInventory = () => {
 
   const inputStyle = { padding: '0.7rem 1rem', border: '1.5px solid var(--clr-border)', borderRadius: 'var(--radius-md)', fontSize: '0.95rem', fontFamily: 'inherit', outline: 'none', width: '100%' };
   const labelStyle = { fontWeight: '600', fontSize: '0.85rem', display: 'block', marginBottom: '0.3rem' };
+
+  const curveInputStyle = { ...inputStyle, padding: '0.45rem 0.6rem', fontSize: '0.85rem', minWidth: 0 };
 
   return (
     <div>
@@ -353,6 +399,91 @@ const AdminInventory = () => {
                       <input style={{ ...inputStyle, borderColor: 'var(--clr-accent)' }} type="text" value={form.ideal_power} onChange={(e) => setForm({ ...form, ideal_power: e.target.value })} placeholder="e.g. 1.5 kW / 2HP" />
                     </div>
                   )}
+
+                  {/* Performance Curves Editor */}
+                  <div style={{ gridColumn: '1 / -1', marginTop: '0.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                      <label style={{ ...labelStyle, display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: 0 }}>
+                        <BarChart3 size={16} color="var(--clr-brand-primary)" />
+                        Pump Performance Curves
+                      </label>
+                      <button type="button" className="btn btn-outline" onClick={addCurveRow} style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}>
+                        <Plus size={14} /> Add Data Point
+                      </button>
+                    </div>
+
+                    {form.performance_curves && form.performance_curves.length > 0 ? (
+                      <div style={{ overflowX: 'auto', border: '1px solid var(--clr-border)', borderRadius: 'var(--radius-md)', background: 'var(--clr-bg-page)' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                          <thead>
+                            <tr style={{ background: 'var(--clr-surface-metallic)' }}>
+                              <th style={{ padding: '0.5rem 0.6rem', textAlign: 'left', fontWeight: 700, fontSize: '0.78rem' }}>Flow Rate (m³/h)</th>
+                              <th style={{ padding: '0.5rem 0.6rem', textAlign: 'left', fontWeight: 700, fontSize: '0.78rem' }}>Flow Rate (L/min)</th>
+                              <th style={{ padding: '0.5rem 0.6rem', textAlign: 'left', fontWeight: 700, fontSize: '0.78rem' }}>Head (m)</th>
+                              <th style={{ padding: '0.5rem 0.6rem', textAlign: 'center', fontWeight: 700, fontSize: '0.78rem', width: '60px' }}></th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {form.performance_curves.map((row, idx) => (
+                              <tr key={idx} style={{ borderTop: '1px solid var(--clr-border)' }}>
+                                <td style={{ padding: '0.35rem 0.4rem' }}>
+                                  <input
+                                    type="number"
+                                    step="0.1"
+                                    min="0"
+                                    value={row.flow_rate_m3h}
+                                    onChange={(e) => updateCurveRow(idx, 'flow_rate_m3h', e.target.value)}
+                                    placeholder="0"
+                                    style={{ ...curveInputStyle, width: '100%' }}
+                                  />
+                                </td>
+                                <td style={{ padding: '0.35rem 0.4rem' }}>
+                                  <input
+                                    type="number"
+                                    step="1"
+                                    min="0"
+                                    value={row.flow_rate_lmin}
+                                    onChange={(e) => updateCurveRow(idx, 'flow_rate_lmin', e.target.value)}
+                                    placeholder="0"
+                                    style={{ ...curveInputStyle, width: '100%' }}
+                                  />
+                                </td>
+                                <td style={{ padding: '0.35rem 0.4rem' }}>
+                                  <input
+                                    type="number"
+                                    step="0.1"
+                                    min="0"
+                                    value={row.head_m}
+                                    onChange={(e) => updateCurveRow(idx, 'head_m', e.target.value)}
+                                    placeholder="0"
+                                    style={{ ...curveInputStyle, width: '100%' }}
+                                  />
+                                </td>
+                                <td style={{ padding: '0.35rem 0.4rem', textAlign: 'center' }}>
+                                  <button
+                                    type="button"
+                                    onClick={() => removeCurveRow(idx)}
+                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', display: 'inline-flex', padding: '0.25rem' }}
+                                    title="Remove data point"
+                                  >
+                                    <Trash2 size={15} />
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <div style={{ background: 'var(--clr-surface-metallic)', border: '1px dashed var(--clr-border)', borderRadius: 'var(--radius-md)', padding: '1rem', textAlign: 'center', color: 'var(--clr-text-muted)', fontSize: '0.85rem' }}>
+                        <p style={{ margin: 0 }}>No performance data entered yet.</p>
+                        <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem' }}>Add data points showing flow rates at different head heights (from the pump data sheet).</p>
+                        <button type="button" className="btn btn-outline" onClick={addCurveRow} style={{ marginTop: '0.75rem', padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}>
+                          <Plus size={14} /> Add First Data Point
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </>
               ) : selectedCategory ? (
                 <div style={{ gridColumn: '1 / -1', background: 'var(--clr-surface-metallic)', border: '1px solid var(--clr-border)', borderRadius: 'var(--radius-md)', padding: '0.9rem 1rem', color: 'var(--clr-text-muted)', fontSize: '0.9rem' }}>

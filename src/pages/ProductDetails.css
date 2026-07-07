@@ -116,6 +116,69 @@
   font-size: 0.9rem;
 }
 
+/* ── Performance Curves ──────────────────────────────── */
+.product-detail-performance {
+  padding: 1.35rem;
+}
+
+.performance-subtitle {
+  margin: 0 0 1rem;
+  font-size: 0.88rem;
+  color: var(--clr-text-muted);
+}
+
+.performance-chart-wrapper {
+  margin-bottom: 1.25rem;
+  padding: 0.5rem 0;
+  background: var(--clr-bg-page);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--clr-border-soft);
+}
+
+.performance-table-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-md);
+}
+
+.performance-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.performance-table th {
+  background: var(--clr-surface-metallic);
+  padding: 0.6rem 0.85rem;
+  text-align: left;
+  font-weight: 700;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--clr-text-muted);
+}
+
+.performance-table td {
+  padding: 0.55rem 0.85rem;
+  border-top: 1px solid var(--clr-border-soft);
+  color: var(--clr-text-main);
+}
+
+.performance-table tbody tr:nth-child(even) {
+  background: var(--clr-bg-page);
+}
+
+.performance-table tbody tr:hover {
+  background: rgba(2, 101, 192, 0.04);
+}
+
+.performance-note {
+  margin: 0.85rem 0 0;
+  font-size: 0.82rem;
+  color: var(--clr-text-muted);
+  text-align: center;
+}
+
 @media (max-width: 900px) {
   .product-detail-grid {
     grid-template-columns: 1fr;

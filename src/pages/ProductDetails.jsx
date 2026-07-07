@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Droplets, ArrowRight, CheckCircle2, XCircle } from 'lucide-react';
+import { ArrowLeft, Droplets, ArrowRight, CheckCircle2, XCircle, BarChart3 } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import api from '../services/api';
 import { getCachedPublicCatalog } from '../hooks/usePublicCatalog';
 import EnquiryModal from '../components/EnquiryModal';
@@ -16,6 +17,107 @@ const trimDescription = (value, maxLength = 160) => {
   if (normalized.length <= maxLength) return normalized;
 
   return `${normalized.slice(0, maxLength - 3).trim()}...`;
+};
+
+const PerformanceCurvesSection = ({ curves }) => {
+  if (!curves || curves.length === 0) return null;
+
+  const chartData = curves
+    .filter((c) => c.flow_rate_m3h != null && c.flow_rate_m3h !== '' && c.head_m != null && c.head_m !== '')
+    .map((c) => ({
+      name: `${c.flow_rate_m3h}`,
+      flowLabel: `${c.flow_rate_m3h} m³/h`,
+      head_m: parseFloat(c.head_m) || 0,
+      flow_rate_lmin: c.flow_rate_lmin || Math.round(parseFloat(c.flow_rate_m3h || 0) * 1000 / 60),
+    }));
+
+  if (chartData.length === 0) return null;
+
+  return (
+    <div className="card product-detail-performance">
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
+        <BarChart3 size={20} color="var(--clr-brand-secondary)" />
+        <h3 style={{ margin: 0 }}>Pump Performance Curves</h3>
+      </div>
+      <p className="performance-subtitle">
+        Flow rate at various pumping heads (vertical distances)
+      </p>
+
+      {/* Performance Chart */}
+      <div className="performance-chart-wrapper">
+        <ResponsiveContainer width="100%" height={280}>
+          <BarChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--clr-border)" />
+            <XAxis
+              dataKey="name"
+              tick={{ fontSize: 11, fill: 'var(--clr-text-muted)' }}
+              tickLine={false}
+              axisLine={{ stroke: 'var(--clr-border)' }}
+              label={{ value: 'Flow Rate (m³/h)', position: 'insideBottom', offset: -3, style: { fontSize: 11, fill: 'var(--clr-text-muted)' } }}
+            />
+            <YAxis
+              tick={{ fontSize: 11, fill: 'var(--clr-text-muted)' }}
+              tickLine={false}
+              axisLine={{ stroke: 'var(--clr-border)' }}
+              label={{ value: 'Head (m)', angle: -90, position: 'insideLeft', offset: 10, style: { fontSize: 11, fill: 'var(--clr-text-muted)' } }}
+            />
+            <Tooltip
+              contentStyle={{
+                background: 'var(--surface-strong)',
+                border: '1px solid var(--clr-border)',
+                borderRadius: 'var(--radius-md)',
+                fontSize: '0.82rem',
+              }}
+              formatter={(value, name) => {
+                if (name === 'head_m') return [`${value} m`, 'Head'];
+                return [value, name];
+              }}
+              labelFormatter={(label) => `Flow: ${label} m³/h`}
+            />
+            <Bar dataKey="head_m" radius={[4, 4, 0, 0]} maxBarSize={40}>
+              {chartData.map((entry, index) => {
+                const intensity = 0.3 + (index / chartData.length) * 0.7;
+                return (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={`rgba(2, 101, 192, ${intensity})`}
+                    stroke="rgba(2, 101, 192, 0.4)"
+                    strokeWidth={1}
+                  />
+                );
+              })}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Performance Data Table */}
+      <div className="performance-table-wrapper">
+        <table className="performance-table">
+          <thead>
+            <tr>
+              <th>Flow Rate (m³/h)</th>
+              <th>Flow Rate (L/min)</th>
+              <th>Head (m)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {chartData.map((row, idx) => (
+              <tr key={idx}>
+                <td>{row.name}</td>
+                <td>{row.flow_rate_lmin}</td>
+                <td><strong>{row.head_m}</strong></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <p className="performance-note">
+        <em>Use these values to estimate the pump's output at your specific installation depth.</em>
+      </p>
+    </div>
+  );
 };
 
 const ProductDetails = () => {
@@ -112,6 +214,7 @@ const ProductDetails = () => {
 
   const isPumpCategory = product.category?.is_pump ?? true;
   const hasSpecifications = Boolean(product.max_flow_rate || product.max_height || product.recommended_depth || product.ideal_power);
+  const hasPerformanceCurves = Array.isArray(product.performance_curves) && product.performance_curves.length > 0;
   const productTitle = `${product.name} | Doyin Pumps Kenya`;
   const productDescription = trimDescription(
     product.description || `${product.name} from Doyin Pumps Kenya. Explore specifications, availability, and enquiry options for this product.`
@@ -196,6 +299,10 @@ const ProductDetails = () => {
                 </p>
               )}
             </div>
+          )}
+
+          {isPumpCategory && hasPerformanceCurves && (
+            <PerformanceCurvesSection curves={product.performance_curves} />
           )}
 
           <div className="product-detail-actions">
