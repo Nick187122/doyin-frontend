@@ -6,6 +6,7 @@ const EMPTY_FORM = {
   category_id: '',
   name: '',
   description: '',
+  price: '',
   max_flow_rate: '',
   max_height: '',
   recommended_depth: '',
@@ -113,6 +114,7 @@ const AdminInventory = () => {
       category_id: String(product.category_id),
       name: product.name,
       description: product.description || '',
+      price: product.price ?? '',
       max_flow_rate: product.max_flow_rate || '',
       max_height: product.max_height || '',
       recommended_depth: product.recommended_depth || '',
@@ -374,6 +376,25 @@ const AdminInventory = () => {
               <div style={{ gridColumn: '1 / -1' }}>
                 <label style={labelStyle}>Description</label>
                 <textarea style={{ ...inputStyle, resize: 'vertical', minHeight: '90px' }} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Brief product description..." />
+              </div>
+
+              <div>
+                <label style={labelStyle}>Price (KES)</label>
+                <div style={{ position: 'relative' }}>
+                  <span style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--clr-text-muted)', fontWeight: 600, fontSize: '0.95rem', pointerEvents: 'none' }}>KES</span>
+                  <input
+                    style={{ ...inputStyle, paddingLeft: '3.2rem' }}
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={form.price}
+                    onChange={(e) => setForm({ ...form, price: e.target.value })}
+                    placeholder="0.00"
+                  />
+                </div>
+                <p style={{ margin: '0.3rem 0 0', fontSize: '0.78rem', color: 'var(--clr-text-muted)' }}>
+                  Leave empty to hide price (shows "Contact for pricing").
+                </p>
               </div>
 
               {selectedCategory?.is_pump ? (
@@ -657,6 +678,7 @@ const AdminInventory = () => {
             <thead>
               <tr style={{ background: 'var(--clr-surface-metallic)' }}>
                 <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 700, fontSize: '0.85rem' }}>Product</th>
+                <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 700, fontSize: '0.85rem' }}>Price</th>
                 <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 700, fontSize: '0.85rem' }}>Category</th>
                 <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 700, fontSize: '0.85rem' }}>Description</th>
                 <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 700, fontSize: '0.85rem' }}>Flow Rate</th>
@@ -684,6 +706,9 @@ const AdminInventory = () => {
                           </span>
                         </div>
                       </div>
+                    </td>
+                    <td style={{ padding: '1rem', fontWeight: 600, fontSize: '0.9rem', color: 'var(--clr-text-main)', whiteSpace: 'nowrap' }}>
+                      {product.price != null ? `KES ${Number(product.price).toLocaleString()}` : '-'}
                     </td>
                     <td style={{ padding: '1rem' }}><span className="badge" style={{ background: 'rgba(2,101,192,0.1)', color: 'var(--clr-brand-primary)', border: '1px solid rgba(2,101,192,0.2)', fontSize: '0.75rem', padding: '0.2rem 0.5rem', borderRadius: 'var(--radius-full)', fontWeight: 600 }}>{product.category?.name || '-'}</span></td>
                     <td style={{ padding: '1rem', fontSize: '0.9rem', color: 'var(--clr-text-muted)', minWidth: '220px' }}>

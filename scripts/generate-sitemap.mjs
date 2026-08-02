@@ -18,12 +18,18 @@ const API_BASE_URL = (
   || env.VITE_API_BASE_URL
   || process.env.SITEMAP_API_BASE_URL
   || process.env.VITE_API_BASE_URL
-  || 'https://doyin-kenya.duckdns.org/api'
+  || 'https://doyin-backend.onrender.com/api'
 ).replace(/\/+$/, '');
 const OUTPUT_DIR = new URL('../public/', import.meta.url);
 const OUTPUT_FILE = new URL('../public/sitemap.xml', import.meta.url);
 const LOCAL_PRODUCT_EXPORT_SCRIPT = resolve(PROJECT_ROOT, '../doyin-backend/query_products.php');
 const SITEMAP_PRODUCTS_ENDPOINT = '/public/sitemap/products';
+
+// Resolve a possibly-relative API base (e.g. '/api') to an absolute URL for server-side fetch.
+// The build runs BEFORE the new vercel.json is live, so always talk to the backend directly.
+const resolveApiBase = (value) => /^https?:\/\//i.test(value)
+  ? value
+  : `https://doyin-backend.onrender.com${value.startsWith('/') ? value : `/${value}`}`;
 
 const today = new Date().toISOString().split('T')[0];
 const isLocalApi = (value = '') => /localhost|127\.0\.0\.1/i.test(value);
@@ -36,8 +42,8 @@ const staticRoutes = [
 
 async function fetchProducts() {
   const resolvedApiBaseUrl = mode === 'production' && isLocalApi(API_BASE_URL)
-    ? 'https://doyin-kenya.duckdns.org/api'
-    : API_BASE_URL;
+    ? 'https://doyin-backend.onrender.com/api'
+    : resolveApiBase(API_BASE_URL);
   const sitemapUrl = `${resolvedApiBaseUrl}${SITEMAP_PRODUCTS_ENDPOINT}`;
   const fallbackProductsUrl = `${resolvedApiBaseUrl}/public/products`;
 

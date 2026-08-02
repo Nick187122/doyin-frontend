@@ -159,7 +159,7 @@ const Home = () => {
             {heroImages.length > 0 ? (
               <div className="carousel-container">
                 <img
-                  src={`${API_ORIGIN}${heroImages[currentIndex].image_path}`}
+                  src={heroImages[currentIndex].image_url || `${API_ORIGIN}${heroImages[currentIndex].image_path}`}
                   alt={heroImages[currentIndex].title || 'Hero image'}
                   className="carousel-image"
                   fetchPriority="high"
@@ -272,6 +272,7 @@ const Home = () => {
                     <h3>{product.name}</h3>
                     <p>{product.description || 'Open this product to see specifications, details, and direct enquiry options.'}</p>
                     <div className="new-arrival-meta">
+                      {product.price != null && <span style={{ fontWeight: 700, color: 'var(--clr-brand-primary)' }}>KES {Number(product.price).toLocaleString()}</span>}
                       {product.max_flow_rate && <span>Flow: {product.max_flow_rate}</span>}
                       {product.max_height && <span>Head: {product.max_height}</span>}
                       {product.ideal_power && <span>Power: {product.ideal_power}</span>}
@@ -326,6 +327,7 @@ const Home = () => {
                     </div>
                     <p>{product.description || 'Open the product to review details, specifications, and enquiry options.'}</p>
                     <div className="featured-product-meta">
+                      {product.price != null && <span style={{ fontWeight: 700, color: 'var(--clr-brand-primary)' }}>KES {Number(product.price).toLocaleString()}</span>}
                       {product.max_flow_rate && <span>Flow: {product.max_flow_rate}</span>}
                       {product.max_height && <span>Head: {product.max_height}</span>}
                       {product.ideal_power && <span>Power: {product.ideal_power}</span>}
@@ -495,6 +497,11 @@ const Home = () => {
                       {product.category && <span className="popular-product-category">{product.category.name}</span>}
                       <h3>{product.name}</h3>
                       <p>{product.description || 'Open this product to review specifications and enquire directly.'}</p>
+                      {product.price != null && (
+                        <p style={{ fontWeight: 700, color: 'var(--clr-brand-primary)', marginTop: '0.5rem', fontSize: '1.05rem' }}>
+                          KES {Number(product.price).toLocaleString()}
+                        </p>
+                      )}
                     </div>
 
                     <div className="popular-product-side">

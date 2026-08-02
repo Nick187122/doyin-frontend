@@ -268,6 +268,12 @@ const ProductDetails = () => {
             <div className="card product-detail-specs">
               <h3 style={{ marginTop: 0, marginBottom: '1.2rem' }}>Technical Specifications</h3>
               <div className="product-detail-spec-grid">
+                {product.price != null && (
+                  <div className="product-detail-spec" style={{ background: 'rgba(2, 101, 192, 0.08)' }}>
+                    <span>Price</span>
+                    <strong style={{ fontSize: '1.2rem' }}>KES {Number(product.price).toLocaleString()}</strong>
+                  </div>
+                )}
                 {product.max_flow_rate && (
                   <div className="product-detail-spec">
                     <span>Maximum Flow Rate</span>

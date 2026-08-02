@@ -2,8 +2,14 @@ import axios from 'axios';
 
 export const AUTH_TOKEN_KEY = 'admin_token';
 export const DEVICE_TOKEN_KEY = 'device_token';
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://doyin-kenya.duckdns.org/api';
-export const API_ORIGIN = new URL(API_BASE_URL).origin;
+
+// Same-origin by default: Vercel rewrites /api/* to the Render backend.
+// Override with VITE_API_BASE_URL for custom environments.
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+
+export const API_ORIGIN = API_BASE_URL.startsWith('http')
+  ? new URL(API_BASE_URL).origin
+  : (typeof window !== 'undefined' ? window.location.origin : '');
 
 const api = axios.create({
   baseURL: API_BASE_URL,

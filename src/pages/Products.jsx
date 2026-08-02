@@ -10,6 +10,8 @@ const FILTER_OPTIONS = [
   { value: 'pump', label: 'Pump Types' },
   { value: 'other', label: 'Accessories and Other' },
   { value: 'in-stock', label: 'In Stock' },
+  { value: 'with-price', label: 'Has Price' },
+  { value: 'without-price', label: 'No Price Listed' },
   { value: 'with-flow-rate', label: 'With Flow Rate' },
   { value: 'with-height', label: 'With Max Height' },
   { value: 'with-depth', label: 'With Recommended Depth' },
@@ -21,6 +23,8 @@ const matchesViewFilter = (product, selectedView) => {
     case 'pump': return product.category?.is_pump ?? true;
     case 'other': return !(product.category?.is_pump ?? true);
     case 'in-stock': return Boolean(product.in_stock);
+    case 'with-price': return product.price != null;
+    case 'without-price': return product.price == null;
     case 'with-flow-rate': return Boolean(product.max_flow_rate);
     case 'with-height': return Boolean(product.max_height);
     case 'with-depth': return Boolean(product.recommended_depth);
@@ -214,6 +218,12 @@ const Products = () => {
                 )}
 
                 <div className="product-card-specs">
+                  {product.price != null && (
+                    <div className="product-card-spec" style={{ gridColumn: '1 / -1', background: 'rgba(2, 101, 192, 0.06)' }}>
+                      <span>Price</span>
+                      <strong style={{ fontSize: '1rem' }}>KES {Number(product.price).toLocaleString()}</strong>
+                    </div>
+                  )}
                   {product.max_flow_rate && (
                     <div className="product-card-spec">
                       <span>Flow Rate</span>
