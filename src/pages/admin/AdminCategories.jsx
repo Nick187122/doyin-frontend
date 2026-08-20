@@ -18,8 +18,10 @@ const AdminCategories = () => {
     try {
       const res = await api.get('/categories');
       setCategories(res.data);
-    } catch { setError('Failed to load categories.'); }
-    finally { setLoading(false); }
+    } catch (err) {
+      console.error('Failed to load categories:', err);
+      setError('Failed to load categories.');
+    } finally { setLoading(false); }
   };
 
   useEffect(() => { fetchCategories(); }, []);
@@ -55,6 +57,7 @@ const AdminCategories = () => {
       setShowForm(false);
       await fetchCategories();
     } catch (err) {
+      console.error('Failed to save category:', err);
       const errors = err.response?.data?.errors;
       setError(errors ? Object.values(errors).flat().join(' ') : 'Failed to save category.');
     } finally { setSaving(false); }
@@ -65,7 +68,11 @@ const AdminCategories = () => {
       await api.delete(`/categories/${id}`);
       setDeleteConfirm(null);
       await fetchCategories();
-    } catch { setError('Cannot delete category — it may have products linked to it.'); setDeleteConfirm(null); }
+    } catch (err) {
+      console.error('Failed to delete category:', err);
+      setError('Cannot delete category — it may have products linked to it.');
+      setDeleteConfirm(null);
+    }
   };
 
   return (

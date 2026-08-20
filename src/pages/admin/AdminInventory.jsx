@@ -90,7 +90,8 @@ const AdminInventory = () => {
       const [pRes, cRes] = await Promise.all([api.get('/products'), api.get('/categories')]);
       setProducts(pRes.data);
       setCategories(cRes.data);
-    } catch {
+    } catch (err) {
+      console.error('Failed to load inventory data:', err);
       setError('Failed to load data.');
     } finally {
       setLoading(false);
@@ -225,14 +226,15 @@ const AdminInventory = () => {
     try {
       if (editProduct) {
         fd.append('_method', 'PUT');
-        await api.post(`/products/${editProduct.id}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+        await api.post(`/products/${editProduct.id}`, fd);
       } else {
-        await api.post('/products', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+        await api.post('/products', fd);
       }
       setShowForm(false);
       setSimilarProduct(null);
       await fetchAll();
     } catch (err) {
+      console.error('Failed to save product:', err);
       const errors = err.response?.data?.errors;
       setSimilarProduct(err.response?.data?.similar_product || null);
       setError(
@@ -249,7 +251,8 @@ const AdminInventory = () => {
       await api.delete(`/products/${id}`);
       setDeleteConfirm(null);
       await fetchAll();
-    } catch {
+    } catch (err) {
+      console.error('Failed to delete product:', err);
       setError('Failed to delete product.');
       setDeleteConfirm(null);
     }
