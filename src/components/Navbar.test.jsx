@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import Navbar from './Navbar';
 
@@ -26,11 +26,32 @@ describe('Navbar', () => {
     expect(screen.getByText('About Us')).toBeDefined();
   });
 
-  it('renders contact sales CTA link', () => {
+  it('renders contact sales CTA that offers WhatsApp and call options', () => {
     renderWithRouter();
-    const cta = screen.getByText('Contact Sales');
+
+    const cta = screen.getByRole('button', { name: /contact sales/i });
     expect(cta).toBeDefined();
-    expect(cta.getAttribute('href')).toContain('wa.me');
+    expect(cta.getAttribute('aria-expanded')).toBe('false');
+
+    fireEvent.click(cta);
+
+    const whatsapp = screen.getByRole('menuitem', { name: /whatsapp/i });
+    const call = screen.getByRole('menuitem', { name: /0742 167 151/i });
+
+    expect(whatsapp.getAttribute('href')).toContain('wa.me/254742167151');
+    expect(call.getAttribute('href')).toBe('tel:+254742167151');
+    expect(cta.getAttribute('aria-expanded')).toBe('true');
+  });
+
+  it('closes the contact sales options on Escape', () => {
+    renderWithRouter();
+
+    const cta = screen.getByRole('button', { name: /contact sales/i });
+    fireEvent.click(cta);
+    expect(screen.getByRole('menuitem', { name: /whatsapp/i })).toBeDefined();
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.queryByRole('menuitem', { name: /whatsapp/i })).toBeNull();
   });
 
   it('renders mobile menu button', () => {

@@ -28,6 +28,7 @@ import { API_ORIGIN } from '../services/api';
 import { usePublicCatalog } from '../hooks/usePublicCatalog';
 import { getThumbnailUrl } from '../utils/imageTransforms';
 import Seo from '../components/Seo';
+import ContactSalesButton from '../components/ContactSalesButton';
 import './Home.css';
 
 const categoryIcon = (name = '') => {
@@ -164,9 +165,7 @@ const Home = () => {
               <Link to="/products" className="btn btn-primary">
                 View Catalog <ArrowRight size={20} />
               </Link>
-              <a href="https://wa.me/254742167151" className="btn btn-outline">
-                Contact Sales
-              </a>
+              <ContactSalesButton className="btn btn-outline" />
             </div>
           </div>
 

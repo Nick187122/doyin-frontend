@@ -1,9 +1,10 @@
 import { useState, useMemo } from 'react';
-import { Package, Droplets, Search, MessageCircle, SlidersHorizontal, X, Zap, ArrowRight } from 'lucide-react';
+import { Package, Droplets, Search, SlidersHorizontal, X, Zap, ArrowRight } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { usePublicCatalog } from '../hooks/usePublicCatalog';
 import { getThumbnailUrl } from '../utils/imageTransforms';
 import Seo from '../components/Seo';
+import ContactSalesButton from '../components/ContactSalesButton';
 import './Products.css';
 
 const FILTER_OPTIONS = [
@@ -280,14 +281,10 @@ const Products = () => {
             {hasActiveFilters ? 'No products matched your current search and filter combination.' : 'No products available yet. Check back soon.'}
           </p>
           {hasActiveFilters && (
-            <a
-              href={`https://wa.me/254742167151?text=${encodeURIComponent(`Hi, I could not find the product I need. Search: "${searchTerm.trim() || 'none'}". Please assist me.`)}`}
+            <ContactSalesButton
               className="btn btn-outline"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <MessageCircle size={16} /> Contact Sales
-            </a>
+              message={`Hi, I could not find the product I need. Search: "${searchTerm.trim() || 'none'}". Please assist me.`}
+            />
           )}
         </div>
       ) : (
