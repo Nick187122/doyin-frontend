@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MessageSquareQuote, Plus, Pencil, Trash2, Check, X, Star, ToggleLeft, ToggleRight, Loader2, User, Play } from 'lucide-react';
+import { toast } from 'sonner';
 import api from '../../services/api';
 
 const EMPTY_FORM = {
@@ -19,7 +20,6 @@ const EMPTY_FORM = {
 const AdminTestimonials = () => {
   const [testimonials, setTestimonials] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [editingId, setEditingId] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -30,7 +30,7 @@ const AdminTestimonials = () => {
       const res = await api.get('/testimonials');
       setTestimonials(res.data);
     } catch {
-      setError('Failed to load testimonials.');
+      toast.error('Failed to load testimonials.');
     } finally {
       setLoading(false);
     }
@@ -71,7 +71,6 @@ const AdminTestimonials = () => {
   const handleSave = async (e) => {
     e.preventDefault();
     setSaving(true);
-    setError(null);
 
     const fd = new FormData();
     fd.append('name', form.name);
@@ -98,8 +97,9 @@ const AdminTestimonials = () => {
       }
       await fetchAll();
       resetForm();
+      toast.success(editingId ? 'Testimonial updated' : 'Testimonial created');
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to save testimonial.');
+      toast.error(err.response?.data?.message || 'Failed to save testimonial.');
     } finally {
       setSaving(false);
     }
@@ -110,8 +110,9 @@ const AdminTestimonials = () => {
     try {
       await api.delete(`/testimonials/${id}`);
       setTestimonials(prev => prev.filter(t => t.id !== id));
+      toast.success('Testimonial deleted');
     } catch {
-      alert('Failed to delete. Please try again.');
+      toast.error('Failed to delete');
     }
   };
 
@@ -121,8 +122,9 @@ const AdminTestimonials = () => {
       setTestimonials(prev => prev.map(t =>
         t.id === testimonial.id ? { ...t, is_visible: !t.is_visible } : t
       ));
+      toast.success(testimonial.is_visible ? 'Now hidden' : 'Now visible');
     } catch {
-      alert('Failed to update visibility.');
+      toast.error('Failed to update visibility');
     }
   };
 
@@ -139,22 +141,17 @@ const AdminTestimonials = () => {
 
   return (
     <div className="admin-page">
-      <div className="admin-page-header">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
-          <MessageSquareQuote size={32} color="var(--clr-brand-primary)" />
-          <h1 style={{ margin: 0 }}>Testimonials</h1>
+      <div className="admin-page-header" style={{ alignItems: 'flex-start' }}>
+        <div className="admin-page-title">
+          <MessageSquareQuote size={32} color="var(--clr-brand-primary)" style={{ marginBottom: '0.5rem' }} />
+          <div style={{ minWidth: 0 }}>
+            <h1 style={{ margin: 0 }}>Testimonials</h1>
+            <p>
+              Manage customer testimonials. Visible testimonials will appear on the public homepage.
+            </p>
+          </div>
         </div>
-        <p style={{ color: 'var(--clr-text-muted)', marginTop: '0.25rem' }}>
-          Manage customer testimonials. Visible testimonials will appear on the public homepage.
-        </p>
       </div>
-
-      {error && (
-        <div style={{ background: '#fee2e2', color: '#991b1b', padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span>{error}</span>
-          <button onClick={() => setError(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#991b1b' }}><X size={16} /></button>
-        </div>
-      )}
 
       {/* Create/Edit Form */}
       {showForm && (
@@ -164,22 +161,22 @@ const AdminTestimonials = () => {
             <button onClick={resetForm} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--clr-text-muted)', display: 'flex' }}><X size={20} /></button>
           </div>
           <form onSubmit={handleSave}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+            <div className="admin-form-grid">
               <div>
                 <label style={{ fontWeight: 600, fontSize: '0.85rem', display: 'block', marginBottom: '0.3rem' }}>Name *</label>
-                <input type="text" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="e.g. John Mwangi" style={{ padding: '0.7rem 1rem', border: '1.5px solid var(--clr-border)', borderRadius: 'var(--radius-md)', fontSize: '0.95rem', width: '100%' }} />
+                <input type="text" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="e.g. John Mwangi" style={{ padding: '0.7rem 1rem', border: '1.5px solid var(--clr-border)', borderRadius: 'var(--radius-md)', fontSize: '1rem', width: '100%' }} />
               </div>
               <div>
                 <label style={{ fontWeight: 600, fontSize: '0.85rem', display: 'block', marginBottom: '0.3rem' }}>Title / Position</label>
-                <input type="text" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="e.g. Farm Owner" style={{ padding: '0.7rem 1rem', border: '1.5px solid var(--clr-border)', borderRadius: 'var(--radius-md)', fontSize: '0.95rem', width: '100%' }} />
+                <input type="text" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="e.g. Farm Owner" style={{ padding: '0.7rem 1rem', border: '1.5px solid var(--clr-border)', borderRadius: 'var(--radius-md)', fontSize: '1rem', width: '100%' }} />
               </div>
               <div>
                 <label style={{ fontWeight: 600, fontSize: '0.85rem', display: 'block', marginBottom: '0.3rem' }}>Company</label>
-                <input type="text" value={form.company} onChange={e => setForm({ ...form, company: e.target.value })} placeholder="e.g. Green Valley Farm" style={{ padding: '0.7rem 1rem', border: '1.5px solid var(--clr-border)', borderRadius: 'var(--radius-md)', fontSize: '0.95rem', width: '100%' }} />
+                <input type="text" value={form.company} onChange={e => setForm({ ...form, company: e.target.value })} placeholder="e.g. Green Valley Farm" style={{ padding: '0.7rem 1rem', border: '1.5px solid var(--clr-border)', borderRadius: 'var(--radius-md)', fontSize: '1rem', width: '100%' }} />
               </div>
               <div>
                 <label style={{ fontWeight: 600, fontSize: '0.85rem', display: 'block', marginBottom: '0.3rem' }}>Rating (1-5)</label>
-                <select value={form.rating} onChange={e => setForm({ ...form, rating: Number(e.target.value) })} style={{ padding: '0.7rem 1rem', border: '1.5px solid var(--clr-border)', borderRadius: 'var(--radius-md)', fontSize: '0.95rem', width: '100%' }}>
+                <select value={form.rating} onChange={e => setForm({ ...form, rating: Number(e.target.value) })} style={{ padding: '0.7rem 1rem', border: '1.5px solid var(--clr-border)', borderRadius: 'var(--radius-md)', fontSize: '1rem', width: '100%' }}>
                   {[5, 4, 3, 2, 1].map(r => (
                     <option key={r} value={r}>{r} Star{r > 1 ? 's' : ''}</option>
                   ))}
@@ -187,16 +184,16 @@ const AdminTestimonials = () => {
               </div>
               <div style={{ gridColumn: '1 / -1' }}>
                 <label style={{ fontWeight: 600, fontSize: '0.85rem', display: 'block', marginBottom: '0.3rem' }}>Testimonial Content *</label>
-                <textarea required value={form.content} onChange={e => setForm({ ...form, content: e.target.value })} rows={4} placeholder="Write the testimonial..." style={{ padding: '0.7rem 1rem', border: '1.5px solid var(--clr-border)', borderRadius: 'var(--radius-md)', fontSize: '0.95rem', width: '100%', resize: 'vertical', fontFamily: 'inherit' }} />
+                <textarea required value={form.content} onChange={e => setForm({ ...form, content: e.target.value })} rows={4} placeholder="Write the testimonial..." style={{ padding: '0.7rem 1rem', border: '1.5px solid var(--clr-border)', borderRadius: 'var(--radius-md)', fontSize: '1rem', width: '100%', resize: 'vertical', fontFamily: 'inherit' }} />
               </div>
               <div>
                 <label style={{ fontWeight: 600, fontSize: '0.85rem', display: 'block', marginBottom: '0.3rem' }}>Avatar Image</label>
-                <input type="file" accept="image/*" onChange={e => setForm({ ...form, avatar: e.target.files[0] })} style={{ padding: '0.5rem', border: '1px solid var(--clr-border)', borderRadius: 'var(--radius-md)', fontSize: '0.9rem', width: '100%' }} />
+                <input className="admin-file-input" type="file" accept="image/*" onChange={e => setForm({ ...form, avatar: e.target.files[0] })} />
                 <span style={{ fontSize: '0.75rem', color: 'var(--clr-text-muted)' }}>Optional. Max 2MB.</span>
               </div>
               <div>
                 <label style={{ fontWeight: 600, fontSize: '0.85rem', display: 'block', marginBottom: '0.3rem' }}>Video</label>
-                <input type="file" accept="video/*" onChange={e => setForm({ ...form, video: e.target.files[0] })} style={{ padding: '0.5rem', border: '1px solid var(--clr-border)', borderRadius: 'var(--radius-md)', fontSize: '0.9rem', width: '100%' }} />
+                <input className="admin-file-input" type="file" accept="video/*" onChange={e => setForm({ ...form, video: e.target.files[0] })} />
                 <span style={{ fontSize: '0.75rem', color: 'var(--clr-text-muted)' }}>Optional. MP4, MOV, WebM. Max 20MB.</span>
                 {form.existing_video_url && !form.video && (
                   <div style={{ marginTop: '0.5rem' }}>
@@ -210,14 +207,14 @@ const AdminTestimonials = () => {
               </div>
               <div>
                 <label style={{ fontWeight: 600, fontSize: '0.85rem', display: 'block', marginBottom: '0.3rem' }}>Sort Order</label>
-                <input type="number" value={form.sort_order} onChange={e => setForm({ ...form, sort_order: Number(e.target.value) })} style={{ padding: '0.7rem 1rem', border: '1.5px solid var(--clr-border)', borderRadius: 'var(--radius-md)', fontSize: '0.95rem', width: '100%' }} />
+                <input type="number" value={form.sort_order} onChange={e => setForm({ ...form, sort_order: Number(e.target.value) })} style={{ padding: '0.7rem 1rem', border: '1.5px solid var(--clr-border)', borderRadius: 'var(--radius-md)', fontSize: '1rem', width: '100%' }} />
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <input type="checkbox" checked={form.is_visible} onChange={e => setForm({ ...form, is_visible: e.target.checked })} id="visible-cb" style={{ width: '18px', height: '18px' }} />
                 <label htmlFor="visible-cb" style={{ fontWeight: 600 }}>Visible on homepage</label>
               </div>
             </div>
-            <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--clr-border)' }}>
+            <div className="admin-actions" style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--clr-border)' }}>
               <button type="submit" className="btn btn-primary" disabled={saving}>
                 {saving ? <><Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> Saving...</> : <><Check size={16} /> {editingId ? 'Update' : 'Create'}</>}
               </button>
@@ -253,7 +250,7 @@ const AdminTestimonials = () => {
           <div style={{ display: 'grid', gap: '0.75rem' }}>
             {testimonials.map(testimonial => (
               <div key={testimonial.id} className="card" style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', padding: '1rem 1.25rem' }}>
-                <div style={{ display: 'flex', gap: '1rem', flex: 1, minWidth: '240px' }}>
+                <div style={{ display: 'flex', gap: '1rem', flex: 1, minWidth: 'min(240px, 100%)' }}>
                   <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(2,101,192,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--clr-brand-primary)', flexShrink: 0, overflow: 'hidden' }}>
                     {testimonial.avatar_url ? (
                       <img src={testimonial.avatar_url} alt={testimonial.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -282,7 +279,7 @@ const AdminTestimonials = () => {
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0 }}>
+                <div className="admin-row-actions" style={{ flexShrink: 0 }}>
                   <span style={{ fontSize: '0.78rem', color: 'var(--clr-text-muted)' }}>Order: {testimonial.sort_order}</span>
                   <button
                     onClick={() => handleToggleVisibility(testimonial)}
@@ -295,7 +292,7 @@ const AdminTestimonials = () => {
                   <button className="btn btn-outline" onClick={() => openEdit(testimonial)} style={{ padding: '0.4rem 0.75rem', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                     <Pencil size={14} /> Edit
                   </button>
-                  <button onClick={() => handleDelete(testimonial.id)} style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444', borderRadius: 'var(--radius-md)', padding: '0.4rem 0.75rem', cursor: 'pointer', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <button onClick={() => handleDelete(testimonial.id)} className="admin-icon-btn danger" style={{ padding: '0.4rem 0.75rem' }}>
                     <Trash2 size={14} /> Delete
                   </button>
                 </div>

@@ -1,7 +1,8 @@
 .admin-layout-container {
   display: flex;
   height: 100vh;
-  width: 100vw;
+  height: 100dvh;
+  width: 100%;
   overflow: hidden;
   background-color: var(--clr-bg-page);
   color: var(--clr-text-main);
@@ -18,12 +19,15 @@
   flex: 1;
   min-width: 0; /* Important for preventing flex children from pushing bounds */
   height: 100vh;
+  height: 100dvh;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .admin-page-content {
   padding: 2rem;
   flex: 1;
+  min-width: 0;
 }
 
 /* Scrollbar styling for admin specific content */
@@ -39,4 +43,41 @@
 }
 .admin-main-content::-webkit-scrollbar-thumb:hover {
   background: var(--clr-text-muted);
+}
+
+/* The drawer scrim only exists while the off-canvas sidebar is in use */
+.admin-sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 10010;
+  padding: 0;
+  border: none;
+  cursor: pointer;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(2px);
+  -webkit-tap-highlight-color: transparent;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity var(--transition-normal), visibility var(--transition-normal);
+}
+
+.admin-sidebar-is-open .admin-sidebar-backdrop {
+  display: block;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+@media (max-width: 1023px) {
+  .admin-page-content {
+    padding: 1.25rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .admin-page-content {
+    padding: 0.9rem 0.85rem calc(1.5rem + env(safe-area-inset-bottom, 0px));
+  }
 }

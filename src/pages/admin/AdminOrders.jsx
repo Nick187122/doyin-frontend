@@ -4,9 +4,11 @@ import { ShoppingCart } from 'lucide-react';
 const AdminOrders = () => {
   return (
     <div className="admin-page">
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
-        <ShoppingCart size={32} color="var(--clr-brand-primary)" />
-        <h1>Order Management</h1>
+      <div className="admin-page-header">
+        <div className="admin-page-title">
+          <ShoppingCart size={32} color="var(--clr-brand-primary)" />
+          <h1 style={{ margin: 0 }}>Order Management</h1>
+        </div>
       </div>
       <div className="card">
         <h3>Recent Orders</h3>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Mail, AlertTriangle, Check, Trash2, RefreshCw } from 'lucide-react';
+import { toast } from 'sonner';
 import api from '../../services/api';
 import './AdminMessages.css';
 
@@ -31,30 +32,36 @@ const AdminMessages = () => {
       setInteractions((current) =>
         current.map((item) => (item.id === id ? { ...item, is_read: true } : item))
       );
+      toast.success('Marked as read');
     } catch (err) {
       console.error('Failed to mark read', err);
+      toast.error('Failed to mark as read');
     }
   };
 
   const deleteInteraction = async (id) => {
-    if (!window.confirm('Delete this item?')) return;
+    if (!confirm('Delete this item?')) return;
 
     try {
       await api.delete(`/interactions/${id}`);
       setInteractions((current) => current.filter((item) => item.id !== id));
+      toast.success('Deleted');
     } catch (err) {
       console.error('Failed to delete', err);
+      toast.error('Failed to delete');
     }
   };
 
   const clearAll = async () => {
-    if (!window.confirm('Are you sure you want to clear ALL messages and notifications?')) return;
+    if (!confirm('Are you sure you want to clear ALL messages and notifications?')) return;
 
     try {
       await api.post('/interactions/clear');
       setInteractions([]);
+      toast.success('All messages cleared');
     } catch (err) {
       console.error('Failed to clear all', err);
+      toast.error('Failed to clear');
     }
   };
 
@@ -62,19 +69,19 @@ const AdminMessages = () => {
 
   return (
     <div className="admin-page">
-      <div className="admin-header">
-        <h1>Messages & Alerts</h1>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+      <div className="admin-page-header">
+        <h1 style={{ margin: 0 }}>Messages &amp; Alerts</h1>
+        <div className="admin-actions">
           <button className="btn btn-outline" onClick={fetchInteractions} disabled={loading}>
             <RefreshCw size={18} className={loading ? 'spin' : ''} /> Refresh
           </button>
-          <button className="btn btn-danger" onClick={clearAll}>
+          <button className="btn admin-btn-danger" onClick={clearAll}>
             <Trash2 size={18} /> Clear All
           </button>
         </div>
       </div>
 
-      <div className="tabs">
+      <div className="tabs admin-scroller" role="tablist">
         <button
           className={`tab-btn ${activeTab === 'message' ? 'active' : ''}`}
           onClick={() => setActiveTab('message')}

@@ -39,7 +39,7 @@ const Footer = () => {
               </li>
               <li>
                 <Mail size={20} />
-                <a href={`mailto:${settings.contact_email || 'info@doyinkenya.com'}`}>{settings.contact_email || 'info@doyinkenya.com'}</a>
+                <a href={`mailto:${settings.contact_email || 'oyiolonic@gmail.com'}`}>{settings.contact_email || 'oyiolonic@gmail.com'}</a>
               </li>
             </ul>
           </div>

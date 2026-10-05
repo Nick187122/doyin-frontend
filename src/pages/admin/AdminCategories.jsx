@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Tag, Plus, Trash2, Edit2, Check, X, Zap, AlertCircle } from 'lucide-react';
+import { toast } from 'sonner';
 import api from '../../services/api';
 
 const EMPTY_FORM = { name: '', is_pump: true, has_ideal_power: false };
@@ -11,7 +12,6 @@ const AdminCategories = () => {
   const [editId, setEditId] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   const fetchCategories = async () => {
@@ -20,7 +20,7 @@ const AdminCategories = () => {
       setCategories(res.data);
     } catch (err) {
       console.error('Failed to load categories:', err);
-      setError('Failed to load categories.');
+      toast.error('Failed to load categories.');
     } finally { setLoading(false); }
   };
 
@@ -30,7 +30,6 @@ const AdminCategories = () => {
     setEditId(null);
     setForm(EMPTY_FORM);
     setShowForm(true);
-    setError('');
   };
 
   const openEdit = (cat) => {
@@ -41,13 +40,12 @@ const AdminCategories = () => {
       has_ideal_power: cat.has_ideal_power,
     });
     setShowForm(true);
-    setError('');
   };
 
   const handleSave = async (e) => {
     e.preventDefault();
-    if (!form.name.trim()) { setError('Category name is required.'); return; }
-    setSaving(true); setError('');
+    if (!form.name.trim()) { toast.error('Category name is required.'); return; }
+    setSaving(true);
     try {
       if (editId) {
         await api.put(`/categories/${editId}`, form);
@@ -55,11 +53,12 @@ const AdminCategories = () => {
         await api.post('/categories', form);
       }
       setShowForm(false);
+      toast.success(editId ? 'Category updated' : 'Category created');
       await fetchCategories();
     } catch (err) {
       console.error('Failed to save category:', err);
       const errors = err.response?.data?.errors;
-      setError(errors ? Object.values(errors).flat().join(' ') : 'Failed to save category.');
+      toast.error(errors ? Object.values(errors).flat().join(' ') : 'Failed to save category.');
     } finally { setSaving(false); }
   };
 
@@ -67,18 +66,19 @@ const AdminCategories = () => {
     try {
       await api.delete(`/categories/${id}`);
       setDeleteConfirm(null);
+      toast.success('Category deleted');
       await fetchCategories();
     } catch (err) {
       console.error('Failed to delete category:', err);
-      setError('Cannot delete category — it may have products linked to it.');
+      toast.error('Cannot delete category — it may have products linked to it.');
       setDeleteConfirm(null);
     }
   };
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+      <div className="admin-page-header">
+        <div className="admin-page-title">
           <Tag size={32} color="var(--clr-brand-primary)" />
           <h1 style={{ margin: 0 }}>Categories</h1>
         </div>
@@ -86,13 +86,6 @@ const AdminCategories = () => {
           <Plus size={18} /> Add Category
         </button>
       </div>
-
-      {error && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#fee2e2', color: '#991b1b', border: '1px solid #fecaca', borderRadius: 'var(--radius-md)', padding: '0.75rem 1rem', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
-          <AlertCircle size={16} /><span>{error}</span>
-          <button onClick={() => setError('')} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: '#991b1b' }}><X size={16} /></button>
-        </div>
-      )}
 
       {/* Create / Edit Form */}
       {showForm && (
@@ -112,7 +105,7 @@ const AdminCategories = () => {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <label style={{ fontWeight: '600', fontSize: '0.9rem' }}>Category Type *</label>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+              <div className="admin-form-grid">
                 <button
                   type="button"
                   onClick={() => setForm({ ...form, is_pump: true })}
@@ -168,7 +161,7 @@ const AdminCategories = () => {
               </div>
             )}
 
-            <div style={{ display: 'flex', gap: '1rem' }}>
+            <div className="admin-actions" style={{ marginTop: '0.25rem' }}>
               <button type="submit" className="btn btn-primary" disabled={saving}>
                 <Check size={16} /> {saving ? 'Saving...' : 'Save Category'}
               </button>
@@ -191,26 +184,26 @@ const AdminCategories = () => {
           <button className="btn btn-primary" onClick={openCreate}><Plus size={16} /> Create Category</button>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
+        <div className="admin-card-grid">
           {categories.map((cat) => (
             <div key={cat.id} className="card" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <h3 style={{ margin: 0, fontSize: '1.1rem' }}>{cat.name}</h3>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <button onClick={() => openEdit(cat)} style={{ background: 'none', border: '1px solid var(--clr-border)', borderRadius: 'var(--radius-sm)', padding: '0.3rem', cursor: 'pointer', color: 'var(--clr-text-muted)', display: 'flex' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+                <h3 style={{ margin: 0, fontSize: '1.1rem', minWidth: 0, overflowWrap: 'anywhere' }}>{cat.name}</h3>
+                <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
+                  <button onClick={() => openEdit(cat)} className="admin-icon-btn" title="Edit category" aria-label={`Edit ${cat.name}`}>
                     <Edit2 size={15} />
                   </button>
-                  <button onClick={() => setDeleteConfirm(cat.id)} style={{ background: 'none', border: '1px solid #fecaca', borderRadius: 'var(--radius-sm)', padding: '0.3rem', cursor: 'pointer', color: '#dc2626', display: 'flex' }}>
+                  <button onClick={() => setDeleteConfirm(cat.id)} className="admin-icon-btn danger" title="Delete category" aria-label={`Delete ${cat.name}`}>
                     <Trash2 size={15} />
                   </button>
                 </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '0.4rem 0.5rem' }}>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.78rem', color: cat.is_pump ? 'var(--clr-brand-primary)' : 'var(--clr-text-muted)', background: cat.is_pump ? 'rgba(2,101,192,0.08)' : 'var(--clr-surface-metallic)', padding: '0.2rem 0.5rem', borderRadius: 'var(--radius-full)', border: '1px solid var(--clr-border)', fontWeight: 600 }}>
                   {cat.is_pump ? 'Pump' : 'Other'}
                 </span>
                 {cat.has_ideal_power
-                  ? <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.78rem', color: '#92400e', background: '#fef3c7', padding: '0.2rem 0.5rem', borderRadius: 'var(--radius-full)', border: '1px solid #fde68a', fontWeight: 600 }}><Zap size={12} />Ideal Power Enabled</span>
+                  ? <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.78rem', color: '#92400e', background: '#fef3c7', padding: '0.2rem 0.5rem', borderRadius: 'var(--radius-full)', border: '1px solid #fde68a', fontWeight: 600 }}><Zap size={12} />Ideal Power</span>
                   : <span style={{ fontSize: '0.78rem', color: 'var(--clr-text-muted)' }}>{cat.is_pump ? 'No ideal power field' : 'Description only'}</span>
                 }
                 <span style={{ marginLeft: 'auto', fontSize: '0.78rem', color: 'var(--clr-text-muted)' }}>{cat.products_count ?? 0} product{cat.products_count !== 1 ? 's' : ''}</span>

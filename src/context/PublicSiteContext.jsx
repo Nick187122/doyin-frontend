@@ -9,7 +9,7 @@ const DEFAULT_SETTINGS = {
   facebook_url: '#',
   instagram_url: '#',
   contact_phone: '+254 742 167 151',
-  contact_email: 'info@doyinkenya.com',
+  contact_email: 'oyiolonic@gmail.com',
   contact_address: 'Nairobi, Kenya',
   homepage_new_arrivals_enabled: '1',
   homepage_new_arrivals_badge: 'New Arrivals',

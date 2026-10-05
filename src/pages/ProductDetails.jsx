@@ -7,6 +7,7 @@ import { getCachedPublicCatalog } from '../hooks/usePublicCatalog';
 import EnquiryModal from '../components/EnquiryModal';
 import Seo from '../components/Seo';
 import './ProductDetails.css';
+import PumpDutyPointVisualizer from '../components/PumpDutyPointVisualizer';
 
 const buildViewSessionKey = (productId) => `product_view_recorded_${productId}`;
 
@@ -311,13 +312,17 @@ const ProductDetails = () => {
             <PerformanceCurvesSection curves={product.performance_curves} />
           )}
 
+          {isPumpCategory && hasPerformanceCurves && (
+            <PumpDutyPointVisualizer curves={product.performance_curves} />
+          )}
+
           <div className="product-detail-actions">
             <button
-              className="btn btn-outline"
+              className="btn btn-primary"
               style={{ flex: 1, justifyContent: 'center', padding: '1rem' }}
               onClick={() => setShowEnquiry(true)}
             >
-              Inquire Now <ArrowRight size={20} />
+              Inquire via WhatsApp <ArrowRight size={20} />
             </button>
           </div>
           <p className="product-detail-note">Choose a sales rep and connect via WhatsApp instantly.</p>

@@ -36,20 +36,6 @@ export const mockHeroImage = (overrides = {}) => ({
   ...overrides,
 });
 
-export const mockTestimonial = (overrides = {}) => ({
-  id: 1,
-  name: 'John Doe',
-  title: 'CEO',
-  company: 'Test Corp',
-  content: 'Great products!',
-  rating: 5,
-  avatar_url: null,
-  video_url: null,
-  is_visible: true,
-  sort_order: 1,
-  ...overrides,
-});
-
 export const mockSalesperson = (overrides = {}) => ({
   id: 1,
   name: 'Jane Sales',
@@ -60,7 +46,7 @@ export const mockSalesperson = (overrides = {}) => ({
 
 export const mockSetting = (overrides = {}) => ({
   contact_phone: '+254 742 167 151',
-  contact_email: 'info@doyinkenya.com',
+  contact_email: 'oyiolonic@gmail.com',
   contact_address: 'Nairobi, Kenya',
   facebook_url: '#',
   instagram_url: '#',

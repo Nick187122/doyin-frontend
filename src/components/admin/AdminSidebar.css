@@ -8,6 +8,7 @@
   flex-shrink: 0;
   box-shadow: 2px 0 10px rgba(0,0,0,0.1);
   overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .admin-sidebar::-webkit-scrollbar {
@@ -34,6 +35,32 @@
   border-radius: 50%;
   border: 1px solid rgba(255, 255, 255, 0.25);
   background: rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.admin-sidebar-logo span {
+  min-width: 0;
+  line-height: 1.15;
+}
+
+.admin-sidebar-close {
+  display: none;
+  margin-left: auto;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border-radius: var(--radius-md);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.admin-sidebar-close:hover {
+  background: rgba(255, 255, 255, 0.22);
 }
 
 .admin-sidebar-nav {
@@ -53,6 +80,10 @@
   color: rgba(255, 255, 255, 0.7);
   transition: all var(--transition-fast);
   font-weight: 500;
+}
+
+.admin-nav-item svg {
+  flex-shrink: 0;
 }
 
 .admin-nav-item:hover, .admin-nav-item.active {
@@ -79,6 +110,7 @@
 .admin-logout-btn {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.75rem;
   width: 100%;
   padding: 0.75rem 1rem;
@@ -96,4 +128,48 @@
   background: rgba(255, 0, 0, 0.1);
   color: #fff;
   border-color: rgba(255, 0, 0, 0.4);
+}
+
+/* Off-canvas drawer for tablet and phone widths */
+@media (max-width: 1023px) {
+  .admin-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: min(285px, 82vw);
+    z-index: 10020;
+    transform: translateX(-102%);
+    visibility: hidden;
+    box-shadow: 8px 0 28px rgba(0, 0, 0, 0.28);
+    transition: transform var(--transition-normal), visibility var(--transition-normal);
+  }
+
+  .admin-sidebar.open {
+    transform: translateX(0);
+    visibility: visible;
+  }
+
+  .admin-sidebar-logo {
+    font-size: 1.1rem;
+    padding: 1rem 1rem 0.9rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .admin-sidebar-close {
+    display: inline-flex;
+  }
+
+  .admin-nav-item {
+    padding: 0.8rem 1rem;
+    font-size: 0.95rem;
+  }
+}
+
+/* Hover-only slide is disorienting on touch devices */
+@media (hover: none) {
+  .admin-nav-item:hover,
+  .admin-nav-item.active:hover {
+    transform: none;
+  }
 }

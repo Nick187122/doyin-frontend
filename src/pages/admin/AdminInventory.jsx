@@ -1,6 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { Package, Plus, Trash2, Edit2, X, Check, AlertCircle, ImageIcon, Zap, Search, MessageCircle, Eye, BarChart3 } from 'lucide-react';
+import { toast } from 'sonner';
+import imageCompression from 'browser-image-compression';
 import api from '../../services/api';
+import { useProductsQuery, useCategoriesQuery, useDeleteProductMutation, useToggleProductStockMutation, useUpdateProductPriceMutation } from '../../hooks/useCatalogQuery';
 
 const EMPTY_FORM = {
   category_id: '',
@@ -35,17 +38,82 @@ const truncateText = (value, maxLength = 90) => {
   return `${normalized.slice(0, maxLength - 3).trim()}...`;
 };
 
+const InlinePriceEditor = ({ product, onSave }) => {
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(product.price ?? '');
+
+  const handleSave = () => {
+    setEditing(false);
+    if (String(value) !== String(product.price ?? '')) {
+      onSave(value);
+    }
+  };
+
+  if (editing) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+        <input
+          type="number"
+          step="0.01"
+          min="0"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onBlur={handleSave}
+          onKeyDown={(e) => { if (e.key === 'Enter') handleSave(); if (e.key === 'Escape') { setEditing(false); setValue(product.price ?? ''); } }}
+          autoFocus
+          style={{ width: '100px', padding: '0.25rem 0.4rem', border: '1.5px solid var(--clr-brand-primary)', borderRadius: 'var(--radius-sm)', fontSize: '0.85rem', fontFamily: 'inherit', outline: 'none' }}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <span
+      onClick={() => setEditing(true)}
+      style={{ cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem', padding: '0.2rem 0.4rem', borderRadius: 'var(--radius-sm)', transition: 'background 0.15s' }}
+      onMouseOver={(e) => e.currentTarget.style.background = 'var(--clr-surface-metallic)'}
+      onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+      title="Click to edit price"
+    >
+      {product.price != null ? `KES ${Number(product.price).toLocaleString()}` : 'Set price'}
+    </span>
+  );
+};
+
+const ProductActions = ({ product, onPreview, onEdit, onRequestDelete, onConfirmDelete, deleteOpen, onCancelDelete }) => (
+  <div className="admin-row-actions">
+    <button className="admin-icon-btn" onClick={onPreview} title="View product details" aria-label={`View ${product.name}`}>
+      <Eye size={15} />
+    </button>
+    <button className="admin-icon-btn" onClick={onEdit} title="Edit product" aria-label={`Edit ${product.name}`}>
+      <Edit2 size={15} />
+    </button>
+    <button className="admin-icon-btn danger" onClick={onRequestDelete} title="Delete product" aria-label={`Delete ${product.name}`}>
+      <Trash2 size={15} />
+    </button>
+    {deleteOpen && (
+      <div className="admin-confirm-inline">
+        <p>Delete &ldquo;{product.name}&rdquo;? This cannot be undone.</p>
+        <div className="admin-actions">
+          <button className="btn admin-btn-danger" style={{ padding: '0.35rem 0.7rem', fontSize: '0.8rem' }} onClick={onConfirmDelete}>Delete</button>
+          <button className="btn btn-outline" style={{ padding: '0.35rem 0.7rem', fontSize: '0.8rem' }} onClick={onCancelDelete}>Cancel</button>
+        </div>
+      </div>
+    )}
+  </div>
+);
+
 const AdminInventory = () => {
-  const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: products = [], isLoading: loading } = useProductsQuery();
+  const { data: categories = [] } = useCategoriesQuery();
+  const deleteMutation = useDeleteProductMutation();
+  const toggleStockMutation = useToggleProductStockMutation();
+  const updatePriceMutation = useUpdateProductPriceMutation();
   const [showForm, setShowForm] = useState(false);
   const [editProduct, setEditProduct] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [imagePreview, setImagePreview] = useState(null);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
-  const [similarProduct, setSimilarProduct] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [previewProduct, setPreviewProduct] = useState(null);
@@ -84,29 +152,12 @@ const AdminInventory = () => {
       })
     : products;
 
-  const fetchAll = async () => {
-    setLoading(true);
-    try {
-      const [pRes, cRes] = await Promise.all([api.get('/products'), api.get('/categories')]);
-      setProducts(pRes.data);
-      setCategories(cRes.data);
-    } catch (err) {
-      console.error('Failed to load inventory data:', err);
-      setError('Failed to load data.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => { fetchAll(); }, []);
-
   const openCreate = () => {
     setEditProduct(null);
     setForm(EMPTY_FORM);
     setImagePreview(null);
     setShowForm(true);
-    setError('');
-    setSimilarProduct(null);
+
   };
 
   const openEdit = (product) => {
@@ -126,8 +177,7 @@ const AdminInventory = () => {
     });
     setImagePreview(product.image_url || null);
     setShowForm(true);
-    setError('');
-    setSimilarProduct(null);
+
   };
 
   const handleImageChange = (e) => {
@@ -196,17 +246,15 @@ const AdminInventory = () => {
 
   const handleSave = async (e) => {
     e.preventDefault();
-    if (!form.category_id) { setError('Please select a category.'); return; }
-    if (!form.name.trim()) { setError('Product name is required.'); return; }
+    if (!form.category_id) { toast.error('Please select a category.'); return; }
+    if (!form.name.trim()) { toast.error('Product name is required.'); return; }
     if (liveDuplicateProduct) {
-      setSimilarProduct(liveDuplicateProduct);
-      setError('A similar product name already exists. Open it from the suggestions and edit it instead.');
+      toast.error('A similar product name already exists. Open it from the suggestions and edit it instead.');
       return;
     }
 
     setSaving(true);
-    setError('');
-    setSimilarProduct(null);
+
 
     const preparedForm = selectedCategory?.is_pump ? form : clearPumpFields(form);
     const fd = new FormData();
@@ -221,7 +269,18 @@ const AdminInventory = () => {
       }
     });
 
-    if (form.image) fd.append('image', form.image);
+    if (form.image) {
+      try {
+        const compressedFile = await imageCompression(form.image, {
+          maxSizeMB: 0.2,
+          maxWidthOrHeight: 800,
+          useWebWorker: true,
+        });
+        fd.append('image', compressedFile);
+      } catch {
+        fd.append('image', form.image);
+      }
+    }
 
     try {
       if (editProduct) {
@@ -230,14 +289,13 @@ const AdminInventory = () => {
       } else {
         await api.post('/products', fd);
       }
+      toast.success(editProduct ? 'Product updated' : 'Product created');
       setShowForm(false);
-      setSimilarProduct(null);
-      await fetchAll();
+  
     } catch (err) {
       console.error('Failed to save product:', err);
       const errors = err.response?.data?.errors;
-      setSimilarProduct(err.response?.data?.similar_product || null);
-      setError(
+      toast.error(
         err.response?.data?.message
           || (errors ? Object.values(errors).flat().join(' ') : 'Failed to save product.')
       );
@@ -246,16 +304,14 @@ const AdminInventory = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    try {
-      await api.delete(`/products/${id}`);
-      setDeleteConfirm(null);
-      await fetchAll();
-    } catch (err) {
-      console.error('Failed to delete product:', err);
-      setError('Failed to delete product.');
-      setDeleteConfirm(null);
-    }
+  const handleDelete = (id) => {
+    deleteMutation.mutate(id, {
+      onSuccess: () => {
+        toast.success('Product deleted');
+        setDeleteConfirm(null);
+      },
+      onError: () => toast.error('Failed to delete product'),
+    });
   };
 
   const inputStyle = { padding: '0.7rem 1rem', border: '1.5px solid var(--clr-border)', borderRadius: 'var(--radius-md)', fontSize: '0.95rem', fontFamily: 'inherit', outline: 'none', width: '100%' };
@@ -265,8 +321,8 @@ const AdminInventory = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+      <div className="admin-page-header">
+        <div className="admin-page-title">
           <Package size={32} color="var(--clr-brand-primary)" />
           <h1 style={{ margin: 0 }}>Inventory</h1>
         </div>
@@ -274,35 +330,19 @@ const AdminInventory = () => {
       </div>
 
       <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', background: 'var(--clr-surface)', border: '1px solid var(--clr-border)', borderRadius: 'var(--radius-full)', padding: '0.5rem 0.75rem 0.5rem 1rem', boxShadow: 'var(--shadow-sm)', marginBottom: '1.5rem' }}>
-        <Search size={18} color="var(--clr-text-muted)" />
+        <Search size={18} color="var(--clr-text-muted)" style={{ flexShrink: 0 }} />
         <input
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Search inventory by name, description, category or specification..."
-          style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', fontSize: '0.95rem', fontFamily: 'inherit' }}
+          aria-label="Search inventory"
+          style={{ flex: 1, minWidth: 0, border: 'none', outline: 'none', background: 'transparent', fontSize: '1rem', fontFamily: 'inherit' }}
         />
-        <button type="button" className="btn btn-primary" style={{ padding: '0.55rem 1rem' }}>
+        <button type="button" className="btn btn-primary admin-hide-mobile" style={{ padding: '0.55rem 1rem' }}>
           Search
         </button>
       </div>
-
-      {error && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#fee2e2', color: '#991b1b', border: '1px solid #fecaca', borderRadius: 'var(--radius-md)', padding: '0.75rem 1rem', marginBottom: '1.5rem' }}>
-          <AlertCircle size={16} /><span style={{ flex: 1 }}>{error}</span>
-          {similarProduct && (
-            <button
-              type="button"
-              className="btn btn-outline"
-              onClick={() => openEdit(similarProduct)}
-              style={{ padding: '0.35rem 0.75rem', whiteSpace: 'nowrap' }}
-            >
-              Edit Existing Product
-            </button>
-          )}
-          <button onClick={() => setError('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#991b1b', display: 'flex' }}><X size={16} /></button>
-        </div>
-      )}
 
       {showForm && (
         <div className="card" style={{ marginBottom: '2rem', borderColor: 'var(--clr-brand-primary)', borderWidth: '2px' }}>
@@ -311,8 +351,8 @@ const AdminInventory = () => {
             <button onClick={() => setShowForm(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--clr-text-muted)', display: 'flex' }}><X size={20} /></button>
           </div>
           <form onSubmit={handleSave}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
-              <div style={{ gridColumn: '1 / -1' }}>
+            <div className="admin-form-grid">
+              <div className="admin-span-full">
                 <label style={labelStyle}>Category *</label>
                 <select value={form.category_id} onChange={(e) => handleCategoryChange(e.target.value)} style={inputStyle} required>
                   <option value="">Select a category</option>
@@ -337,8 +377,7 @@ const AdminInventory = () => {
                     value={form.name}
                     onChange={(e) => {
                       setForm({ ...form, name: e.target.value });
-                      setSimilarProduct(null);
-                      setError('');
+                  
                     }}
                     placeholder="e.g. Submersible Pump 2HP Model X"
                     required
@@ -354,8 +393,6 @@ const AdminInventory = () => {
                           key={product.id}
                           type="button"
                           onClick={() => {
-                            setSimilarProduct(product);
-                            setError('A similar product already exists. Edit the existing product instead of creating another one.');
                             openEdit(product);
                           }}
                           style={{ width: '100%', border: 'none', background: '#fff', textAlign: 'left', padding: '0.8rem 0.9rem', cursor: 'pointer', borderBottom: '1px solid #f3f4f6' }}
@@ -525,7 +562,7 @@ const AdminInventory = () => {
 
               <div style={{ gridColumn: '1 / -1' }}>
                 <label style={labelStyle}>Product Image</label>
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
                   <div
                     onClick={() => fileRef.current.click()}
                     style={{ width: '120px', height: '120px', border: '2px dashed var(--clr-border)', borderRadius: 'var(--radius-md)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: 'var(--clr-surface-metallic)', flexShrink: 0, overflow: 'hidden', transition: 'border-color 0.2s' }}
@@ -545,7 +582,7 @@ const AdminInventory = () => {
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--clr-border)' }}>
+            <div className="admin-actions" style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--clr-border)' }}>
               <button type="submit" className="btn btn-primary" disabled={saving}><Check size={16} /> {saving ? 'Saving...' : 'Save Product'}</button>
               <button type="button" className="btn btn-outline" onClick={() => setShowForm(false)}><X size={16} /> Cancel</button>
             </div>
@@ -555,37 +592,27 @@ const AdminInventory = () => {
 
       {previewProduct && (
         <div
+          className="admin-modal-backdrop"
           onClick={() => setPreviewProduct(null)}
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(15, 23, 42, 0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '1.5rem',
-            zIndex: 1200,
-          }}
         >
           <div
-            className="card"
+            className="card admin-modal"
             onClick={(e) => e.stopPropagation()}
-            style={{ width: 'min(720px, 100%)', maxHeight: '85vh', overflowY: 'auto', padding: '1.5rem' }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
-              <div>
+            <div className="admin-modal-header">
+              <div style={{ minWidth: 0 }}>
                 <p style={{ margin: 0, fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--clr-brand-primary)' }}>
                   Product Preview
                 </p>
                 <h3 style={{ margin: '0.35rem 0 0' }}>{previewProduct.name}</h3>
               </div>
-              <button onClick={() => setPreviewProduct(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--clr-text-muted)', display: 'flex' }}>
+              <button className="admin-modal-close" onClick={() => setPreviewProduct(null)} aria-label="Close preview">
                 <X size={20} />
               </button>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(160px, 220px) 1fr', gap: '1.25rem', alignItems: 'start' }}>
-              <div style={{ borderRadius: 'var(--radius-lg)', overflow: 'hidden', background: 'var(--clr-surface-metallic)', minHeight: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div className="admin-modal-media">
+              <div className="admin-modal-image">
                 {previewProduct.image_url ? (
                   <img src={previewProduct.image_url} alt={previewProduct.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 ) : (
@@ -610,7 +637,7 @@ const AdminInventory = () => {
                   </p>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '0.75rem' }}>
+                <div className="admin-modal-spec-grid">
                   <div style={{ padding: '0.85rem', border: '1px solid var(--clr-border)', borderRadius: 'var(--radius-md)', background: 'var(--clr-bg-page)' }}>
                     <div style={{ fontSize: '0.75rem', color: 'var(--clr-text-muted)', marginBottom: '0.3rem' }}>Flow Rate</div>
                     <strong>{previewProduct.max_flow_rate || '-'}</strong>
@@ -631,7 +658,7 @@ const AdminInventory = () => {
               </div>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem' }}>
+            <div className="admin-actions admin-actions-end" style={{ marginTop: '1.5rem' }}>
               <button
                 type="button"
                 className="btn btn-outline"
@@ -651,7 +678,10 @@ const AdminInventory = () => {
       )}
 
       {loading ? (
-        <p style={{ textAlign: 'center', color: 'var(--clr-text-muted)', padding: '3rem' }}>Loading products...</p>
+        <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--clr-text-muted)' }}>
+          <div className="spinner" />
+          <p style={{ marginTop: '1rem' }}>Loading products...</p>
+        </div>
       ) : filteredProducts.length === 0 ? (
         <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
           <Package size={48} color="var(--clr-border)" style={{ marginBottom: '1rem' }} />
@@ -676,74 +706,135 @@ const AdminInventory = () => {
           )}
         </div>
       ) : (
-        <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ background: 'var(--clr-surface-metallic)' }}>
-                <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 700, fontSize: '0.85rem' }}>Product</th>
-                <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 700, fontSize: '0.85rem' }}>Price</th>
-                <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 700, fontSize: '0.85rem' }}>Category</th>
-                <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 700, fontSize: '0.85rem' }}>Description</th>
-                <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 700, fontSize: '0.85rem' }}>Flow Rate</th>
-                <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 700, fontSize: '0.85rem' }}>Max Height</th>
-                <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 700, fontSize: '0.85rem' }}>Depth</th>
-                <th style={{ padding: '1rem', textAlign: 'center', fontWeight: 700, fontSize: '0.85rem' }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredProducts.map((product, index) => (
-                <React.Fragment key={product.id}>
-                  <tr style={{ borderTop: '1px solid var(--clr-border)', background: index % 2 === 1 ? 'var(--clr-bg-page)' : 'transparent' }}>
-                    <td style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                      <div style={{ width: '44px', height: '44px', borderRadius: 'var(--radius-md)', background: 'var(--clr-surface-metallic)', overflow: 'hidden', flexShrink: 0 }}>
-                        {product.image_url
-                          ? <img src={product.image_url} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 0 }} />
-                          : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Package size={20} color="var(--clr-text-muted)" /></div>}
-                      </div>
-                      <div>
-                        <strong style={{ display: 'block', fontSize: '0.9rem' }}>{product.name}</strong>
-                        {product.ideal_power && <span style={{ fontSize: '0.75rem', color: '#92400e' }}>[Ideal Power] {product.ideal_power}</span>}
-                        <div style={{ marginTop: '0.25rem' }}>
-                          <span style={{ fontSize: '0.7rem', fontWeight: 600, padding: '0.15rem 0.4rem', borderRadius: '4px', background: product.in_stock ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)', color: product.in_stock ? '#10b981' : '#ef4444' }}>
-                            {product.in_stock ? 'In Stock' : 'Out of Stock'}
-                          </span>
-                        </div>
-                      </div>
-                    </td>
-                    <td style={{ padding: '1rem', fontWeight: 600, fontSize: '0.9rem', color: 'var(--clr-text-main)', whiteSpace: 'nowrap' }}>
-                      {product.price != null ? `KES ${Number(product.price).toLocaleString()}` : '-'}
-                    </td>
-                    <td style={{ padding: '1rem' }}><span className="badge" style={{ background: 'rgba(2,101,192,0.1)', color: 'var(--clr-brand-primary)', border: '1px solid rgba(2,101,192,0.2)', fontSize: '0.75rem', padding: '0.2rem 0.5rem', borderRadius: 'var(--radius-full)', fontWeight: 600 }}>{product.category?.name || '-'}</span></td>
-                    <td style={{ padding: '1rem', fontSize: '0.9rem', color: 'var(--clr-text-muted)', minWidth: '220px' }}>
-                      {product.description ? truncateText(product.description) : 'No description'}
-                    </td>
-                    <td style={{ padding: '1rem', fontSize: '0.9rem', color: 'var(--clr-text-muted)' }}>{product.max_flow_rate || '-'}</td>
-                    <td style={{ padding: '1rem', fontSize: '0.9rem', color: 'var(--clr-text-muted)' }}>{product.max_height || '-'}</td>
-                    <td style={{ padding: '1rem', fontSize: '0.9rem', color: 'var(--clr-text-muted)' }}>{product.recommended_depth || '-'}</td>
-                    <td style={{ padding: '1rem', textAlign: 'center' }}>
-                      <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
-                        <button onClick={() => setPreviewProduct(product)} style={{ background: 'none', border: '1px solid var(--clr-border)', borderRadius: 'var(--radius-sm)', padding: '0.4rem', cursor: 'pointer', color: 'var(--clr-text-muted)', display: 'flex' }} title="View product details">
-                          <Eye size={15} />
-                        </button>
-                        <button onClick={() => openEdit(product)} style={{ background: 'none', border: '1px solid var(--clr-border)', borderRadius: 'var(--radius-sm)', padding: '0.4rem', cursor: 'pointer', color: 'var(--clr-text-muted)', display: 'flex' }}><Edit2 size={15} /></button>
-                        <button onClick={() => setDeleteConfirm(product.id)} style={{ background: 'none', border: '1px solid #fecaca', borderRadius: 'var(--radius-sm)', padding: '0.4rem', cursor: 'pointer', color: '#dc2626', display: 'flex' }}><Trash2 size={15} /></button>
-                      </div>
-                      {deleteConfirm === product.id && (
-                        <div style={{ position: 'absolute', background: '#fee2e2', border: '1px solid #fecaca', borderRadius: 'var(--radius-md)', padding: '0.75rem', marginTop: '0.5rem', zIndex: 10, textAlign: 'left', width: '200px', boxShadow: 'var(--shadow-md)' }}>
-                          <p style={{ margin: '0 0 0.5rem', fontSize: '0.82rem', color: '#991b1b', fontWeight: 500 }}>Delete this product?</p>
-                          <div style={{ display: 'flex', gap: '0.4rem' }}>
-                            <button className="btn" style={{ background: '#dc2626', color: '#fff', padding: '0.3rem 0.6rem', fontSize: '0.8rem' }} onClick={() => handleDelete(product.id)}>Delete</button>
-                            <button className="btn btn-outline" style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem' }} onClick={() => setDeleteConfirm(null)}>Cancel</button>
-                          </div>
-                        </div>
-                      )}
-                    </td>
+        <>
+          <div className="card admin-table-view" style={{ padding: 0, overflow: 'hidden' }}>
+            <div className="table-wrapper">
+              <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '860px' }}>
+                <thead>
+                  <tr style={{ background: 'var(--clr-surface-metallic)' }}>
+                    <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 700, fontSize: '0.85rem' }}>Product</th>
+                    <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 700, fontSize: '0.85rem' }}>Price</th>
+                    <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 700, fontSize: '0.85rem' }}>Category</th>
+                    <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 700, fontSize: '0.85rem' }}>Description</th>
+                    <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 700, fontSize: '0.85rem' }}>Flow Rate</th>
+                    <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 700, fontSize: '0.85rem' }}>Max Height</th>
+                    <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 700, fontSize: '0.85rem' }}>Depth</th>
+                    <th style={{ padding: '1rem', textAlign: 'center', fontWeight: 700, fontSize: '0.85rem' }}>Actions</th>
                   </tr>
-                </React.Fragment>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                </thead>
+                <tbody>
+                  {filteredProducts.map((product, index) => (
+                    <React.Fragment key={product.id}>
+                      <tr style={{ borderTop: '1px solid var(--clr-border)', background: index % 2 === 1 ? 'var(--clr-bg-page)' : 'transparent' }}>
+                        <td style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                          <div style={{ width: '44px', height: '44px', borderRadius: 'var(--radius-md)', background: 'var(--clr-surface-metallic)', overflow: 'hidden', flexShrink: 0 }}>
+                            {product.image_url
+                              ? <img src={product.image_url} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 0 }} />
+                              : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Package size={20} color="var(--clr-text-muted)" /></div>}
+                          </div>
+                          <div>
+                            <strong style={{ display: 'block', fontSize: '0.9rem' }}>{product.name}</strong>
+                            {product.ideal_power && <span style={{ fontSize: '0.75rem', color: '#92400e' }}>[Ideal Power] {product.ideal_power}</span>}
+                            <div style={{ marginTop: '0.25rem' }}>
+                              <button
+                                onClick={() => toggleStockMutation.mutate({ id: product.id, in_stock: !product.in_stock })}
+                                style={{ fontSize: '0.7rem', fontWeight: 600, padding: '0.15rem 0.4rem', borderRadius: '4px', background: product.in_stock ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)', color: product.in_stock ? '#10b981' : '#ef4444', border: 'none', cursor: 'pointer' }}
+                                title="Click to toggle stock"
+                              >
+                                {product.in_stock ? 'In Stock' : 'Out of Stock'}
+                              </button>
+                            </div>
+                          </div>
+                        </td>
+                        <td style={{ padding: '1rem' }}>
+                          <InlinePriceEditor product={product} onSave={(price) => updatePriceMutation.mutate({ id: product.id, price })} />
+                        </td>
+                        <td style={{ padding: '1rem' }}><span className="badge" style={{ background: 'rgba(2,101,192,0.1)', color: 'var(--clr-brand-primary)', border: '1px solid rgba(2,101,192,0.2)', fontSize: '0.75rem', padding: '0.2rem 0.5rem', borderRadius: 'var(--radius-full)', fontWeight: 600 }}>{product.category?.name || '-'}</span></td>
+                        <td style={{ padding: '1rem', fontSize: '0.9rem', color: 'var(--clr-text-muted)', minWidth: '220px' }}>
+                          {product.description ? truncateText(product.description) : 'No description'}
+                        </td>
+                        <td style={{ padding: '1rem', fontSize: '0.9rem', color: 'var(--clr-text-muted)' }}>{product.max_flow_rate || '-'}</td>
+                        <td style={{ padding: '1rem', fontSize: '0.9rem', color: 'var(--clr-text-muted)' }}>{product.max_height || '-'}</td>
+                        <td style={{ padding: '1rem', fontSize: '0.9rem', color: 'var(--clr-text-muted)' }}>{product.recommended_depth || '-'}</td>
+                        <td style={{ padding: '1rem' }}>
+                          <ProductActions
+                            product={product}
+                            onPreview={() => setPreviewProduct(product)}
+                            onEdit={() => openEdit(product)}
+                            onRequestDelete={() => setDeleteConfirm(product.id)}
+                            onConfirmDelete={() => handleDelete(product.id)}
+                            onCancelDelete={() => setDeleteConfirm(null)}
+                            deleteOpen={deleteConfirm === product.id}
+                          />
+                        </td>
+                      </tr>
+                    </React.Fragment>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="admin-card-view">
+            {filteredProducts.map((product) => (
+              <div key={product.id} className="card admin-product-card">
+                <div className="admin-product-card-head">
+                  <div className="admin-product-card-thumb">
+                    {product.image_url
+                      ? <img src={product.image_url} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      : <Package size={22} color="var(--clr-text-muted)" />}
+                  </div>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <p className="admin-product-card-name">{product.name}</p>
+                    {product.ideal_power && (
+                      <p style={{ margin: '0.2rem 0 0', fontSize: '0.75rem', color: '#92400e' }}>Ideal Power: {product.ideal_power}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="admin-product-card-meta">
+                  <span className="badge" style={{ background: 'rgba(2,101,192,0.1)', color: 'var(--clr-brand-primary)', border: '1px solid rgba(2,101,192,0.2)', fontSize: '0.7rem', padding: '0.2rem 0.5rem', fontWeight: 600 }}>
+                    {product.category?.name || 'Uncategorized'}
+                  </span>
+                  <button
+                    onClick={() => toggleStockMutation.mutate({ id: product.id, in_stock: !product.in_stock })}
+                    style={{ fontSize: '0.7rem', fontWeight: 700, padding: '0.25rem 0.5rem', borderRadius: 'var(--radius-full)', background: product.in_stock ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)', color: product.in_stock ? '#10b981' : '#ef4444', border: 'none', cursor: 'pointer' }}
+                    title="Tap to toggle stock"
+                  >
+                    {product.in_stock ? 'In Stock' : 'Out of Stock'}
+                  </button>
+                  <InlinePriceEditor product={product} onSave={(price) => updatePriceMutation.mutate({ id: product.id, price })} />
+                </div>
+
+                {product.description && (
+                  <div className="admin-product-card-specs" style={{ display: 'block' }}>
+                    <span>{truncateText(product.description, 120)}</span>
+                  </div>
+                )}
+
+                {(product.max_flow_rate || product.max_height || product.recommended_depth) && (
+                  <div className="admin-product-card-specs">
+                    {product.max_flow_rate && <span>Flow: {product.max_flow_rate}</span>}
+                    {product.max_height && <span>Head: {product.max_height}</span>}
+                    {product.recommended_depth && <span>Depth: {product.recommended_depth}</span>}
+                  </div>
+                )}
+
+                <div className="admin-product-card-footer">
+                  <ProductActions
+                    product={product}
+                    onPreview={() => setPreviewProduct(product)}
+                    onEdit={() => openEdit(product)}
+                    onRequestDelete={() => setDeleteConfirm(product.id)}
+                    onConfirmDelete={() => handleDelete(product.id)}
+                    onCancelDelete={() => setDeleteConfirm(null)}
+                    deleteOpen={deleteConfirm === product.id}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );

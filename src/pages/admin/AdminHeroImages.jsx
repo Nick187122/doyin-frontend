@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Image, Plus, Trash2, Edit2, Check, X } from 'lucide-react';
+import { toast } from 'sonner';
 import api, { API_ORIGIN } from '../../services/api';
 
 const AdminHeroImages = () => {
@@ -47,60 +48,68 @@ const AdminHeroImages = () => {
             setFile(null);
             setTitle('');
             setOrder(0);
+            toast.success('Image uploaded');
             fetchImages();
         } catch (error) {
             console.error('Upload failed', error);
+            toast.error('Upload failed');
         } finally {
             setUploading(false);
         }
     };
 
     const handleDelete = async (id) => {
-        if (!confirm('Are you sure you want to delete this image?')) return;
+        if (!window.confirm('Are you sure you want to delete this image?')) return;
         try {
             await api.delete(`/hero-images/${id}`);
+            toast.success('Image deleted');
             fetchImages();
         } catch (error) {
             console.error('Error deleting image:', error);
+            toast.error('Failed to delete image');
         }
     };
 
     const toggleActive = async (image) => {
         try {
             await api.put(`/hero-images/${image.id}`, { is_active: !image.is_active });
+            toast.success(image.is_active ? 'Image deactivated' : 'Image activated');
             fetchImages();
         } catch (error) {
             console.error('Error updating image:', error);
+            toast.error('Failed to update');
         }
     };
 
     return (
         <div className="admin-page">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
-                <Image size={32} color="var(--clr-brand-primary)" />
-                <h1>Homepage Images</h1>
+            <div className="admin-page-header">
+                <div className="admin-page-title">
+                    <Image size={32} color="var(--clr-brand-primary)" />
+                    <h1 style={{ margin: 0 }}>Homepage Images</h1>
+                </div>
             </div>
 
             <div className="card" style={{ marginBottom: '2rem' }}>
                 <h3>Upload New Image</h3>
                 <form onSubmit={handleUpload} style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-end', marginTop: '1rem' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <div className="admin-field" style={{ flex: '1 1 220px' }}>
                         <label>Image File *</label>
-                        <input type="file" accept="image/*" onChange={(e) => setFile(e.target.files[0])} required />
+                        <input className="admin-file-input" type="file" accept="image/*" onChange={(e) => setFile(e.target.files[0])} required />
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <div className="admin-field" style={{ flex: '1 1 180px' }}>
                         <label>Caption (Optional)</label>
-                        <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="E.g. Quality Pumps" style={{ padding: '0.5rem' }} />
+                        <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="E.g. Quality Pumps" style={{ padding: '0.55rem', width: '100%' }} />
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <div className="admin-field" style={{ flex: '0 0 90px' }}>
                         <label>Order</label>
-                        <input type="number" value={order} onChange={(e) => setOrder(e.target.value)} style={{ padding: '0.5rem', width: '80px' }} />
+                        <input type="number" value={order} onChange={(e) => setOrder(e.target.value)} style={{ padding: '0.55rem', width: '100%' }} />
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', paddingBottom: '0.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', paddingBottom: '0.75rem' }}>
                         <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} id="active-cb" />
                         <label htmlFor="active-cb">Active</label>
                     </div>
-                    <button type="submit" className="btn btn-primary" disabled={uploading}>
+                    <button type="submit" className="btn btn-primary" disabled={uploading} style={{ marginBottom: '0.25rem' }}>
                         {uploading ? 'Uploading...' : <><Plus size={18} /> Upload Image</>}
                     </button>
                 </form>
@@ -109,7 +118,7 @@ const AdminHeroImages = () => {
             <div className="card">
                 <h3>Current Images</h3>
                 {loading ? <p>Loading images...</p> : (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
+                    <div className="admin-card-grid" style={{ marginTop: '1rem' }}>
                         {images.map(img => (
                             <div key={img.id} style={{ border: '1px solid var(--clr-border)', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
                                 <div style={{ width: '100%', aspectRatio: '16/10', background: 'var(--clr-surface-metallic)' }}>

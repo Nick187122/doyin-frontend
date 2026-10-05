@@ -1,10 +1,10 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Package, Tag, ShoppingCart, Users, Settings, LogOut, Image, Mail, Headset, MessageSquareQuote } from 'lucide-react';
+import { LayoutDashboard, Package, Tag, ShoppingCart, Users, Settings, LogOut, Image, Mail, Headset, MessageSquareQuote, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import './AdminSidebar.css';
 
-const AdminSidebar = () => {
+const AdminSidebar = ({ isOpen = false, onClose }) => {
   const { logout } = useAuth();
   const navigate = useNavigate();
 
@@ -13,65 +13,49 @@ const AdminSidebar = () => {
     navigate('/admin/login');
   };
 
+  // Tapping a destination should never leave the drawer covering the new page.
+  const handleNavigate = () => {
+    if (onClose) onClose();
+  };
+
+  const navItems = [
+    { to: '/admin', label: 'Dashboard', icon: <LayoutDashboard size={20} />, end: true },
+    { to: '/admin/inventory', label: 'Inventory', icon: <Package size={20} /> },
+    { to: '/admin/categories', label: 'Categories', icon: <Tag size={20} /> },
+    { to: '/admin/orders', label: 'Orders', icon: <ShoppingCart size={20} /> },
+    { to: '/admin/users', label: 'Users', icon: <Users size={20} /> },
+    { to: '/admin/messages', label: 'Messages & Alerts', icon: <Mail size={20} /> },
+    { to: '/admin/testimonials', label: 'Testimonials', icon: <MessageSquareQuote size={20} /> },
+    { to: '/admin/hero-images', label: 'Hero Images', icon: <Image size={20} /> },
+    { to: '/admin/salespersons', label: 'Sales Reps', icon: <Headset size={20} /> },
+    { to: '/admin/settings', label: 'Settings', icon: <Settings size={20} /> },
+  ];
+
   return (
-    <aside className="admin-sidebar">
+    <aside className={`admin-sidebar${isOpen ? ' open' : ''}`} aria-label="Admin navigation">
       <div className="admin-sidebar-logo">
         <img src="/images/logo.jpg" alt="Doyin Pumps Kenya logo" className="admin-sidebar-logo-image" />
         <span>Doyin Pumps Kenya</span>
+        <button type="button" className="admin-sidebar-close" onClick={onClose} aria-label="Close navigation">
+          <X size={20} />
+        </button>
       </div>
-      
+
       <nav className="admin-sidebar-nav">
-        <NavLink to="/admin" end className={({ isActive }) => (isActive ? 'admin-nav-item active' : 'admin-nav-item')}>
-          <LayoutDashboard size={20} />
-          <span>Dashboard</span>
-        </NavLink>
-        
-        <NavLink to="/admin/inventory" className={({ isActive }) => (isActive ? 'admin-nav-item active' : 'admin-nav-item')}>
-          <Package size={20} />
-          <span>Inventory</span>
-        </NavLink>
-
-        <NavLink to="/admin/categories" className={({ isActive }) => (isActive ? 'admin-nav-item active' : 'admin-nav-item')}>
-          <Tag size={20} />
-          <span>Categories</span>
-        </NavLink>
-        
-        <NavLink to="/admin/orders" className={({ isActive }) => (isActive ? 'admin-nav-item active' : 'admin-nav-item')}>
-          <ShoppingCart size={20} />
-          <span>Orders</span>
-        </NavLink>
-        
-        <NavLink to="/admin/users" className={({ isActive }) => (isActive ? 'admin-nav-item active' : 'admin-nav-item')}>
-          <Users size={20} />
-          <span>Users</span>
-        </NavLink>
-
-        <NavLink to="/admin/messages" className={({ isActive }) => (isActive ? 'admin-nav-item active' : 'admin-nav-item')}>
-          <Mail size={20} />
-          <span>Messages & Alerts</span>
-        </NavLink>
-
-        <NavLink to="/admin/testimonials" className={({ isActive }) => (isActive ? 'admin-nav-item active' : 'admin-nav-item')}>
-          <MessageSquareQuote size={20} />
-          <span>Testimonials</span>
-        </NavLink>
-        
-        <NavLink to="/admin/hero-images" className={({ isActive }) => (isActive ? 'admin-nav-item active' : 'admin-nav-item')}>
-          <Image size={20} />
-          <span>Hero Images</span>
-        </NavLink>
-        
-        <NavLink to="/admin/salespersons" className={({ isActive }) => (isActive ? 'admin-nav-item active' : 'admin-nav-item')}>
-          <Headset size={20} />
-          <span>Sales Reps</span>
-        </NavLink>
-
-        <NavLink to="/admin/settings" className={({ isActive }) => (isActive ? 'admin-nav-item active' : 'admin-nav-item')}>
-          <Settings size={20} />
-          <span>Settings</span>
-        </NavLink>
+        {navItems.map(({ to, label, icon, end }) => (
+          <NavLink
+            key={to}
+            to={to}
+            end={end}
+            onClick={handleNavigate}
+            className={({ isActive }) => (isActive ? 'admin-nav-item active' : 'admin-nav-item')}
+          >
+            {icon}
+            <span>{label}</span>
+          </NavLink>
+        ))}
       </nav>
-      
+
       <div className="admin-sidebar-footer">
         <button className="admin-logout-btn" onClick={handleLogout}>
           <LogOut size={18} />

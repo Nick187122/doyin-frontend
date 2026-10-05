@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Settings } from 'lucide-react';
 import api, { API_ORIGIN } from '../../services/api';
+import { toast } from 'sonner';
 import AdminPasswordChangePanel from '../../components/admin/AdminPasswordChangePanel';
 
 const AdminSettings = () => {
@@ -28,7 +29,6 @@ const AdminSettings = () => {
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
   const [aboutImageFile, setAboutImageFile] = useState(null);
 
   useEffect(() => {
@@ -79,7 +79,6 @@ const AdminSettings = () => {
   const handleSave = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setMessage('');
     try {
       const formData = new FormData();
       ['store_name', 'contact_email', 'contact_phone', 'contact_address', 'facebook_url', 'instagram_url', 'about_video_url', 'homepage_new_arrivals_enabled', 'homepage_new_arrivals_badge', 'homepage_new_arrivals_title', 'homepage_new_arrivals_copy', 'homepage_new_arrivals_count', 'homepage_new_arrivals_category_id', 'homepage_featured_products_enabled', 'homepage_featured_products_badge', 'homepage_featured_products_title', 'homepage_featured_products_copy', 'homepage_featured_product_ids'].forEach(key => {
@@ -98,7 +97,7 @@ const AdminSettings = () => {
         }
       });
       
-      setMessage('Settings saved successfully!');
+      toast.success('Settings saved successfully');
       setAboutImageFile(null);
       // Re-fetch to update any newly uploaded file paths
       const response = await api.get('/public/settings');
@@ -108,7 +107,7 @@ const AdminSettings = () => {
       }
     } catch (error) {
       console.error('Error saving settings', error);
-      setMessage('Failed to save settings.');
+      toast.error('Failed to save settings');
     } finally {
       setLoading(false);
     }
@@ -116,20 +115,16 @@ const AdminSettings = () => {
 
   return (
     <div className="admin-page">
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
-        <Settings size={32} color="var(--clr-brand-primary)" />
-        <h1>System Settings</h1>
+      <div className="admin-page-header">
+        <div className="admin-page-title">
+          <Settings size={32} color="var(--clr-brand-primary)" />
+          <h1 style={{ margin: 0 }}>System Settings</h1>
+        </div>
       </div>
       <div className="card" style={{ maxWidth: '800px' }}>
         <h3>General Preferences</h3>
         <p style={{ color: 'var(--clr-text-muted)', marginBottom: '1.5rem' }}>Configure main system settings here.</p>
         
-        {message && (
-          <div style={{ padding: '10px', marginBottom: '1rem', backgroundColor: message.includes('success') ? 'var(--clr-brand-secondary)' : '#ef4444', color: 'black', borderRadius: '4px' }}>
-            {message}
-          </div>
-        )}
-
         <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <label style={{ fontWeight: '600' }}>Store Name</label>
@@ -156,7 +151,7 @@ const AdminSettings = () => {
                 <img src={aboutImage} alt="Current About Image" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 0 }} />
               </div>
             )}
-            <input type="file" accept="image/*" onChange={(e) => setAboutImageFile(e.target.files[0])} style={{ padding: '0.5rem', border: '1px solid var(--clr-border)', borderRadius: 'var(--radius-md)' }} />
+            <input className="admin-file-input" type="file" accept="image/*" onChange={(e) => setAboutImageFile(e.target.files[0])} />
             <span style={{ fontSize: '0.8rem', color: 'var(--clr-text-muted)' }}>Leave empty to keep the current image</span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>

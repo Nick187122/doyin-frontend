@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { UserPlus, Pencil, Trash2, Check, X, Phone, User, ToggleLeft, ToggleRight, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import api from '../../services/api';
 
 const AdminSalespersons = () => {
@@ -44,8 +45,9 @@ const AdminSalespersons = () => {
       }
       await fetchAll();
       resetForm();
+      toast.success(editingId ? 'Salesperson updated' : 'Salesperson added');
     } catch {
-      alert('Failed to save. Please check the details and try again.');
+      toast.error('Failed to save. Please check the details and try again.');
     } finally {
       setSaving(false);
     }
@@ -56,8 +58,9 @@ const AdminSalespersons = () => {
     try {
       await api.delete(`/salespersons/${id}`);
       setSalespersons(prev => prev.filter(s => s.id !== id));
+      toast.success('Salesperson removed');
     } catch {
-      alert('Failed to delete. Please try again.');
+      toast.error('Failed to delete');
     }
   };
 
@@ -65,18 +68,21 @@ const AdminSalespersons = () => {
     try {
       await api.put(`/salespersons/${person.id}`, { is_active: !person.is_active });
       setSalespersons(prev => prev.map(s => s.id === person.id ? { ...s, is_active: !s.is_active } : s));
+      toast.success(person.is_active ? 'Deactivated' : 'Activated');
     } catch {
-      alert('Failed to update status.');
+      toast.error('Failed to update status');
     }
   };
 
   return (
     <div className="admin-page">
-      <div className="admin-page-header">
-        <h1>Sales Representatives</h1>
-        <p style={{ color: 'var(--clr-text-muted)', marginTop: '0.25rem' }}>
-          Manage the sales team. Active reps will appear in the customer enquiry dropdown on the website.
-        </p>
+      <div className="admin-page-header" style={{ alignItems: 'flex-start' }}>
+        <div style={{ minWidth: 0 }}>
+          <h1 style={{ margin: 0 }}>Sales Representatives</h1>
+          <p>
+            Manage the sales team. Active reps will appear in the customer enquiry dropdown on the website.
+          </p>
+        </div>
       </div>
 
       {/* Add / Edit Form */}
@@ -153,19 +159,19 @@ const AdminSalespersons = () => {
         <div style={{ display: 'grid', gap: '0.75rem' }}>
           {salespersons.map(person => (
             <div key={person.id} className="card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', padding: '1rem 1.25rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', minWidth: 0 }}>
                 <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(2,101,192,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--clr-brand-primary)', flexShrink: 0 }}>
                   <User size={22} />
                 </div>
-                <div>
-                  <p style={{ margin: 0, fontWeight: 700, fontSize: '1rem' }}>{person.name}</p>
+                <div style={{ minWidth: 0 }}>
+                  <p style={{ margin: 0, fontWeight: 700, fontSize: '1rem', overflowWrap: 'anywhere' }}>{person.name}</p>
                   <p style={{ margin: 0, color: 'var(--clr-text-muted)', fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                    <Phone size={13} /> {person.phone_number}
+                    <Phone size={13} style={{ flexShrink: 0 }} /> {person.phone_number}
                   </p>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <div className="admin-row-actions" style={{ flexShrink: 0 }}>
                 <button
                   onClick={() => handleToggleActive(person)}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', color: person.is_active ? '#10b981' : '#94a3b8', display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.85rem', fontWeight: 600 }}
@@ -177,7 +183,7 @@ const AdminSalespersons = () => {
                 <button className="btn btn-outline" onClick={() => handleEdit(person)} style={{ padding: '0.4rem 0.75rem', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                   <Pencil size={14} /> Edit
                 </button>
-                <button onClick={() => handleDelete(person.id)} style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444', borderRadius: 'var(--radius-md)', padding: '0.4rem 0.75rem', cursor: 'pointer', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <button onClick={() => handleDelete(person.id)} className="admin-icon-btn danger" style={{ padding: '0.4rem 0.75rem' }}>
                   <Trash2 size={14} /> Remove
                 </button>
               </div>

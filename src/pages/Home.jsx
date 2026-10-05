@@ -18,13 +18,15 @@ import {
   TrendingUp,
   Eye,
   Star,
-  Quote,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { usePublicSite } from '../context/PublicSiteContext';
 import { API_ORIGIN } from '../services/api';
 import { usePublicCatalog } from '../hooks/usePublicCatalog';
+import { getThumbnailUrl } from '../utils/imageTransforms';
 import Seo from '../components/Seo';
 import './Home.css';
 
@@ -46,6 +48,9 @@ const Home = () => {
   const { heroImages, settings, testimonials } = usePublicSite();
   const { categories, products } = usePublicCatalog();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [testimonialIdx, setTestimonialIdx] = useState(0);
+  const [mutedMap, setMutedMap] = useState({});
+  const videoRefs = useRef({});
 
   useEffect(() => {
     if (heroImages.length === 0) return undefined;
@@ -59,6 +64,16 @@ const Home = () => {
 
   const nextSlide = () => setCurrentIndex((prev) => (prev + 1) % heroImages.length);
   const prevSlide = () => setCurrentIndex((prev) => (prev - 1 + heroImages.length) % heroImages.length);
+  const nextTestimonial = () => setTestimonialIdx((prev) => (prev + 1) % testimonials.length);
+  const prevTestimonial = () => setTestimonialIdx((prev) => (prev - 1 + testimonials.length) % testimonials.length);
+  const toggleMute = useCallback((id) => {
+    setMutedMap((prev) => {
+      const next = { ...prev, [id]: !prev[id] };
+      const video = videoRefs.current[id];
+      if (video) video.muted = next[id];
+      return next;
+    });
+  }, []);
   const newArrivalsEnabled = settings.homepage_new_arrivals_enabled !== '0';
   const newArrivalsCount = Math.min(Math.max(Number(settings.homepage_new_arrivals_count) || 4, 1), 12);
   const newArrivalsCategoryId = settings.homepage_new_arrivals_category_id
@@ -251,7 +266,7 @@ const Home = () => {
                 <Link key={product.id} to={`/products/${product.id}`} className="new-arrival-card">
                   <div className="new-arrival-media">
                     {product.image_url ? (
-                      <img src={product.image_url} alt={product.name} loading="lazy" decoding="async" />
+                      <img src={getThumbnailUrl(product.image_url)} alt={product.name} loading="lazy" decoding="async" />
                     ) : (
                       <div className="new-arrival-fallback">
                         <Droplets size={36} />
@@ -309,7 +324,7 @@ const Home = () => {
                 <Link key={product.id} to={`/products/${product.id}`} className="featured-product-card">
                   <div className="featured-product-media">
                     {product.image_url ? (
-                      <img src={product.image_url} alt={product.name} loading="lazy" decoding="async" />
+                      <img src={getThumbnailUrl(product.image_url)} alt={product.name} loading="lazy" decoding="async" />
                     ) : (
                       <div className="featured-product-fallback">
                         <Droplets size={34} />
@@ -377,7 +392,7 @@ const Home = () => {
                           <div key={product.id} className="category-hover-item">
                             <div className="category-hover-thumb">
                               {product.image_url ? (
-                                <img src={product.image_url} alt={product.name} loading="lazy" decoding="async" />
+                                <img src={getThumbnailUrl(product.image_url)} alt={product.name} loading="lazy" decoding="async" />
                               ) : (
                                 <Droplets size={18} />
                               )}
@@ -422,47 +437,105 @@ const Home = () => {
               </p>
             </div>
 
-            <div className="testimonials-grid">
-              {testimonials.map((testimonial) => (
-                <div key={testimonial.id} className="card testimonial-card">
-                  <div className="testimonial-stars">
-                    {Array.from({ length: 5 }, (_, i) => (
-                      <Star
-                        key={i}
-                        size={16}
-                        fill={i < (testimonial.rating || 5) ? '#f59e0b' : 'none'}
-                        color={i < (testimonial.rating || 5) ? '#f59e0b' : '#d1d5db'}
-                      />
-                    ))}
-                  </div>
-                  {testimonial.video_url && (
-                    <div className="testimonial-video">
-                      <video src={testimonial.video_url} controls preload="metadata" style={{ width: '100%', borderRadius: 'var(--radius-md)', marginBottom: '1rem' }} />
-                    </div>
-                  )}
-                  <div className="testimonial-quote">
-                    <Quote size={20} className="testimonial-quote-icon" />
-                    <p>&ldquo;{testimonial.content}&rdquo;</p>
-                  </div>
-                  <div className="testimonial-author">
-                    <div className="testimonial-avatar">
-                      {testimonial.avatar_url ? (
-                        <img src={testimonial.avatar_url} alt={testimonial.name} loading="lazy" decoding="async" />
-                      ) : (
-                        <div className="testimonial-avatar-fallback">
-                          {testimonial.name.charAt(0).toUpperCase()}
+            <div className="testimonials-carousel">
+              <button
+                className="testimonials-nav-btn testimonials-nav-prev"
+                onClick={prevTestimonial}
+                aria-label="Previous testimonial"
+              >
+                <ChevronLeft size={22} />
+              </button>
+
+              <div className="testimonials-track">
+                {testimonials.map((testimonial, idx) => {
+                  const offset = idx - testimonialIdx;
+                  const isActive = offset === 0;
+                  return (
+                    <div
+                      key={testimonial.id}
+                      className={`testimonial-card ${isActive ? 'active' : ''}`}
+                      style={{
+                        transform: `translateX(calc(-50% + ${offset * 110}%)) scale(${isActive ? 1 : 0.88})`,
+                        opacity: isActive ? 1 : 0.4,
+                        pointerEvents: isActive ? 'auto' : 'none',
+                        zIndex: isActive ? 2 : 1,
+                      }}
+                    >
+                      <div className="testimonial-stars">
+                        {Array.from({ length: 5 }, (_, i) => (
+                          <Star
+                            key={i}
+                            size={16}
+                            fill={i < (testimonial.rating || 5) ? '#f59e0b' : 'none'}
+                            color={i < (testimonial.rating || 5) ? '#f59e0b' : '#d1d5db'}
+                          />
+                        ))}
+                      </div>
+                      {testimonial.video_url && (
+                        <div className="testimonial-video">
+                          <video
+                            ref={(el) => { videoRefs.current[testimonial.id] = el; }}
+                            src={testimonial.video_url}
+                            autoPlay
+                            muted
+                            loop
+                            playsInline
+                            preload="auto"
+                          />
+                          <button
+                            className="testimonial-mute-btn"
+                            onClick={() => toggleMute(testimonial.id)}
+                            aria-label={mutedMap[testimonial.id] === false ? 'Mute video' : 'Unmute video'}
+                          >
+                            {mutedMap[testimonial.id] === false ? <Volume2 size={18} /> : <VolumeX size={18} />}
+                          </button>
                         </div>
                       )}
+                      <div className="testimonial-quote">
+                        <span className="testimonial-speech-open">&ldquo;</span>
+                        <p>{testimonial.content}</p>
+                        <span className="testimonial-speech-close">&rdquo;</span>
+                      </div>
+                      <div className="testimonial-author">
+                        <div className="testimonial-avatar">
+                          {testimonial.avatar_url ? (
+                            <img src={testimonial.avatar_url} alt={testimonial.name} loading="lazy" decoding="async" />
+                          ) : (
+                            <div className="testimonial-avatar-fallback">
+                              {testimonial.name.charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                        </div>
+                        <div className="testimonial-author-info">
+                          <strong>{testimonial.name}</strong>
+                          {(testimonial.title || testimonial.company) && (
+                            <span>{[testimonial.title, testimonial.company].filter(Boolean).join(' · ')}</span>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <div className="testimonial-author-info">
-                      <strong>{testimonial.name}</strong>
-                      {(testimonial.title || testimonial.company) && (
-                        <span>{[testimonial.title, testimonial.company].filter(Boolean).join(' · ')}</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
+                  );
+                })}
+              </div>
+
+              <button
+                className="testimonials-nav-btn testimonials-nav-next"
+                onClick={nextTestimonial}
+                aria-label="Next testimonial"
+              >
+                <ChevronRight size={22} />
+              </button>
+
+              <div className="testimonials-dots">
+                {testimonials.map((t, idx) => (
+                  <button
+                    key={t.id}
+                    className={`testimonials-dot ${idx === testimonialIdx ? 'active' : ''}`}
+                    onClick={() => setTestimonialIdx(idx)}
+                    aria-label={`Go to testimonial ${idx + 1}`}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </section>

@@ -4,6 +4,8 @@ import { AuthProvider } from './context/AuthContext';
 import { PublicSiteProvider } from './context/PublicSiteContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import BottomNav from './components/BottomNav';
+import WhatsAppButton from './components/WhatsAppButton';
 import AdminLayout from './components/admin/AdminLayout';
 import ProtectedRoute from './components/admin/ProtectedRoute';
 
@@ -20,7 +22,6 @@ const AdminOrders = lazy(() => import('./pages/admin/AdminOrders'));
 const AdminHeroImages = lazy(() => import('./pages/admin/AdminHeroImages'));
 const AdminSettings = lazy(() => import('./pages/admin/AdminSettings'));
 const AdminMessages = lazy(() => import('./pages/admin/AdminMessages'));
-const ReportIssueWidget = lazy(() => import('./components/ReportIssueWidget'));
 const AdminSalespersons = lazy(() => import('./pages/admin/AdminSalespersons'));
 const AdminTestimonials = lazy(() => import('./pages/admin/AdminTestimonials'));
 
@@ -48,9 +49,8 @@ const MainLayout = () => (
         </Suspense>
       </main>
       <Footer />
-      <Suspense fallback={null}>
-        <ReportIssueWidget />
-      </Suspense>
+      <BottomNav />
+      <WhatsAppButton />
     </div>
   </PublicSiteProvider>
 );
